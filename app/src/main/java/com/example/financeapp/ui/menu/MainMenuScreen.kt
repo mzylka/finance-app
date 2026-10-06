@@ -1,4 +1,4 @@
-package com.example.financeapp.ui.screens
+package com.example.financeapp.ui.menu
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
