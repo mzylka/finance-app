@@ -4,7 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.financeapp.ui.menu.MainMenu
+import com.example.financeapp.ui.menu.HomeScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -22,6 +22,6 @@ fun FinanceApp(modifier: Modifier = Modifier) {
         modifier = modifier,
         color = MaterialTheme.colorScheme.background
     ) {
-        MainMenu()
+        HomeScreen()
     }
 }
