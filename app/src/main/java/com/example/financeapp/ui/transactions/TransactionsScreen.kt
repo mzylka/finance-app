@@ -6,7 +6,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
-fun TransactionsScreen(
+fun Transactions(
     modifier: Modifier = Modifier,
     viewModel: TransactionViewModel = viewModel()
 ) {
