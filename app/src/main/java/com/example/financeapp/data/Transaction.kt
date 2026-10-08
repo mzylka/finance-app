@@ -1,7 +1,5 @@
 package com.example.financeapp.data
 
-import java.util.Date
-
 enum class TransactionCategory {
     INCOME,
     EXPENSE,
@@ -9,7 +7,7 @@ enum class TransactionCategory {
 
 data class Transaction(
     val id: Int,
-    val date: Date,
+    val date: String,
     val description: String,
     val amount: Double,
     val category: TransactionCategory,
