@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -17,11 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.financeapp.data.Transaction
-import com.example.financeapp.data.TransactionCategory
+import com.example.financeapp.data.TransactionT
+import com.example.financeapp.data.TransactionType
 
 @Composable
-fun TransactionComponent(transaction: Transaction, modifier: Modifier = Modifier) {
+fun TransactionComponent(transactionT: TransactionT, modifier: Modifier = Modifier) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
@@ -29,12 +27,12 @@ fun TransactionComponent(transaction: Transaction, modifier: Modifier = Modifier
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
-        Text(text = transaction.date, modifier = Modifier.weight(1f))
-        Text(text = transaction.description, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-        if (transaction.category == TransactionCategory.INCOME) {
+        Text(text = transactionT.date, modifier = Modifier.weight(1f))
+        Text(text = transactionT.description, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+        if (transactionT.category == TransactionType.INCOME) {
             Icon(
                 Icons.Filled.ArrowUpward,
-                contentDescription = transaction.category.toString(),
+                contentDescription = transactionT.category.toString(),
                 tint = Color.Green,
                 modifier = Modifier.weight(1f)
             )
@@ -42,11 +40,11 @@ fun TransactionComponent(transaction: Transaction, modifier: Modifier = Modifier
         else {
             Icon(
                 Icons.Filled.ArrowDownward,
-                contentDescription = transaction.category.toString(),
+                contentDescription = transactionT.category.toString(),
                 tint = Color.Red,
                 modifier = Modifier.weight(1f)
             )
         }
-        Text(text = transaction.amount.toString(), modifier = Modifier.weight(1f))
+        Text(text = transactionT.amount.toString(), modifier = Modifier.weight(1f))
     }
 }

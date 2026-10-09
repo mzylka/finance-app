@@ -32,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -40,12 +39,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.example.financeapp.data.TransactionCategory
+import com.example.financeapp.data.TransactionType
 
 @Composable
 fun AddTransactionFullScreenDialog(
     onDismissRequest: () -> Unit,
-    onSave: (amount: Double, category: String, type: TransactionCategory) -> Unit
+    onSave: (amount: Double, category: String, type: TransactionType) -> Unit
 ) {
     var amountText by rememberSaveable { mutableStateOf("") }
 
@@ -53,7 +52,7 @@ fun AddTransactionFullScreenDialog(
     var selectedCategory by rememberSaveable { mutableStateOf(categories.first()) }
     var isCategoryExpanded by rememberSaveable { mutableStateOf(false) }
 
-    val types = TransactionCategory.entries
+    val types = TransactionType.entries
     var selectedTypeIndex by rememberSaveable { mutableIntStateOf(0) } // 0 = EXPENSE, 1 = INCOME
 
     Dialog(

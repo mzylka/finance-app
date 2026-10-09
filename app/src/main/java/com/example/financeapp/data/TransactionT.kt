@@ -1,14 +1,14 @@
 package com.example.financeapp.data
 
-enum class TransactionCategory {
+enum class TransactionType {
     INCOME,
     EXPENSE,
 }
 
-data class Transaction(
+data class TransactionT(
     val id: Int,
     val date: String,
     val description: String,
     val amount: Double,
-    val category: TransactionCategory,
+    val category: TransactionType,
 )

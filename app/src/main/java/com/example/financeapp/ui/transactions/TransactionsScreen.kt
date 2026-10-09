@@ -17,8 +17,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.financeapp.data.Transaction
-import com.example.financeapp.data.TransactionCategory
+import com.example.financeapp.data.TransactionT
+import com.example.financeapp.data.TransactionType
 import com.example.financeapp.ui.theme.FinanceAppTheme
 import java.time.LocalDate
 
@@ -42,22 +42,22 @@ fun Transactions(
                 .padding(innerPadding)
         ) {
             TransactionComponent(
-                transaction = Transaction(
+                transactionT = TransactionT(
                     1,
                     LocalDate.now().toString(),
                     "Test",
                     100.0,
-                    TransactionCategory.INCOME
+                    TransactionType.INCOME
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
             TransactionComponent(
-                transaction = Transaction(
+                transactionT = TransactionT(
                     1,
                     LocalDate.now().toString(),
                     "Test",
                     -10.0,
-                    TransactionCategory.EXPENSE
+                    TransactionType.EXPENSE
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
