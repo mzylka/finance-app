@@ -1,7 +1,9 @@
 package com.example.financeapp.data.transactions
 
+import com.example.financeapp.data.TransactionType
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import kotlin.time.Instant
 
 class TransactionRepositoryImpl @Inject constructor(
     private val transactionDao: TransactionDAO
@@ -28,5 +30,36 @@ class TransactionRepositoryImpl @Inject constructor(
         endDate: kotlin.time.Instant
     ): List<Transaction> {
         return transactionDao.getTransactionsByDateRange(startDate, endDate)
+    }
+
+    override suspend fun getTransactionsByType(type: TransactionType): List<Transaction> {
+        return transactionDao.getTransactionsByType(type)
+    }
+
+    override suspend fun getTransactionsByCategory(categoryId: Int): List<Transaction> {
+        return transactionDao.getTransactionsByCategory(categoryId)
+    }
+
+    override suspend fun getTransactionsByDatesAndCategory(
+        startDate: Instant,
+        endDate: Instant,
+        categoryId: Int
+    ): List<Transaction> {
+        return transactionDao.getTransactionsByDatesAndCategory(startDate, endDate, categoryId)
+    }
+
+    override suspend fun updateTransactionAmount(id: Int, amount: Double) {
+        return transactionDao.updateTransactionAmount(id, amount)
+    }
+
+    override suspend fun updateTransactionCategory(id: Int, categoryId: Int) {
+        return transactionDao.updateTransactionCategory(id, categoryId)
+    }
+
+    override suspend fun updateTransactionType(
+        id: Int,
+        type: TransactionType
+    ) {
+        return transactionDao.updateTransactionType(id, type)
     }
 }
