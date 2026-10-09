@@ -13,3 +13,12 @@ data class CategoryWithTransactions(
     )
     val transactions: List<Transaction>
 )
+
+data class TransactionWithCategory(
+    @Embedded val transaction: Transaction,
+    @Relation(
+        parentColumn = "categoryId",
+        entityColumn = "id"
+    )
+    val category: Category
+)

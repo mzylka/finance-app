@@ -2,6 +2,8 @@ package com.example.financeapp.di
 
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.financeapp.data.AppDatabase
 import com.example.financeapp.data.budget.BudgetDAO
 import com.example.financeapp.data.budget.BudgetRepository
@@ -56,7 +58,23 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "finance_app_db"
-        ).build()
+        )
+            .addCallback(object : RoomDatabase.Callback() {
+                override fun onCreate(db: SupportSQLiteDatabase) {
+                    super.onCreate(db)
+                    db.execSQL("INSERT INTO categories (name) VALUES ('Food & Dining')")
+                    db.execSQL("INSERT INTO categories (name) VALUES ('Transportation')")
+                    db.execSQL("INSERT INTO categories (name) VALUES ('Shopping')")
+                    db.execSQL("INSERT INTO categories (name) VALUES ('Entertainment')")
+                    db.execSQL("INSERT INTO categories (name) VALUES ('Bills & Utilities')")
+                    db.execSQL("INSERT INTO categories (name) VALUES ('Salary')")
+
+                    db.execSQL("INSERT INTO monthlyBudget (id, amount) VALUES (1, 0.0)")
+
+                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (12, 1, 100, 'INCOME')")
+                }
+            })
+            .build()
     }
 
     @Provides

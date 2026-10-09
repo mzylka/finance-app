@@ -3,7 +3,9 @@ package com.example.financeapp.data.transactions
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction as RoomTransaction
 import com.example.financeapp.data.TransactionType
+import com.example.financeapp.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Instant
 
@@ -32,6 +34,10 @@ interface TransactionDAO {
 
     @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate AND categoryId = :categoryId")
     suspend fun getTransactionsByDatesAndCategory(startDate: Instant, endDate: Instant, categoryId: Int): List<Transaction>
+
+    @RoomTransaction
+    @Query("SELECT * FROM transactions ORDER BY date DESC")
+    suspend fun getTransactionsWithCategory(): List<TransactionWithCategory>
 
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun deleteTransactionById(id: Int)

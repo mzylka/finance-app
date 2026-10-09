@@ -1,6 +1,7 @@
 package com.example.financeapp.data.transactions
 
 import com.example.financeapp.data.TransactionType
+import com.example.financeapp.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
 import kotlin.time.Instant
 
@@ -14,6 +15,7 @@ interface TransactionRepository {
     suspend fun getTransactionsByType(type: TransactionType): List<Transaction>
     suspend fun getTransactionsByCategory(categoryId: Int): List<Transaction>
     suspend fun getTransactionsByDatesAndCategory(startDate: Instant, endDate: Instant, categoryId: Int): List<Transaction>
+    suspend fun getTransactionsWithCategory(): List<TransactionWithCategory>
     suspend fun updateTransactionAmount(id: Int, amount: Double)
     suspend fun updateTransactionCategory(id: Int, categoryId: Int)
     suspend fun updateTransactionType(id: Int, type: TransactionType)
