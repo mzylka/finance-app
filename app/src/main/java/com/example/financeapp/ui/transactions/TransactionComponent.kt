@@ -1,5 +1,6 @@
 package com.example.financeapp.ui.transactions
 
+import android.R.attr.type
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -15,11 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.financeapp.data.TransactionT
 import com.example.financeapp.data.TransactionType
+import com.example.financeapp.data.TransactionWithCategory
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import kotlin.time.toJavaInstant
 
 @Composable
-fun TransactionComponent(transactionT: TransactionT, modifier: Modifier = Modifier) {
+fun TransactionComponent(transactionWithCategory: TransactionWithCategory, modifier: Modifier = Modifier) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
@@ -27,12 +31,17 @@ fun TransactionComponent(transactionT: TransactionT, modifier: Modifier = Modifi
             .border(1.dp, Color.Black, shape = RoundedCornerShape(8.dp))
             .padding(16.dp)
     ) {
-        Text(text = transactionT.date, modifier = Modifier.weight(1f))
-        Text(text = transactionT.description, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
-        if (transactionT.category == TransactionType.INCOME) {
+        val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneId.systemDefault())
+        Text(
+            text = formatter.format(transactionWithCategory.transaction.date.toJavaInstant()),
+            modifier = Modifier.weight(1f),
+            minLines = 2,
+        )
+        Text(text = transactionWithCategory.category.name, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+        if (transactionWithCategory.transaction.type == TransactionType.INCOME) {
             Icon(
                 Icons.Filled.ArrowUpward,
-                contentDescription = transactionT.category.toString(),
+                contentDescription = transactionWithCategory.transaction.type.toString(),
                 tint = Color.Green,
                 modifier = Modifier.weight(1f)
             )
@@ -40,11 +49,11 @@ fun TransactionComponent(transactionT: TransactionT, modifier: Modifier = Modifi
         else {
             Icon(
                 Icons.Filled.ArrowDownward,
-                contentDescription = transactionT.category.toString(),
+                contentDescription = transactionWithCategory.transaction.type.toString(),
                 tint = Color.Red,
                 modifier = Modifier.weight(1f)
             )
         }
-        Text(text = transactionT.amount.toString(), modifier = Modifier.weight(1f))
+        Text(text = transactionWithCategory.transaction.amount.toString(), modifier = Modifier.weight(1f))
     }
 }

@@ -9,20 +9,21 @@ import androidx.compose.ui.Modifier
 @Composable
 fun DropdownMenu(
     modifier: Modifier = Modifier,
-    expaned: Boolean = false,
-    onDismissRequest: () -> Unit = {}
+    expanded: Boolean = false,
+    onDismissRequest: () -> Unit = {},
+    onShowBudgetClick: () -> Unit = {}
 ) {
     DropdownMenu(
-        expanded = expaned,
+        expanded = expanded,
         onDismissRequest = onDismissRequest,
         modifier = modifier
     ) {
         DropdownMenuItem(
             text = { Text("Change monthly budget") },
-            onClick = { /* Do something... */ }
+            onClick = { onShowBudgetClick() }
         )
         DropdownMenuItem(
-            text = { Text("Another one") },
+            text = { Text("Filter") },
             onClick = { /* Do something... */ }
         )
     }

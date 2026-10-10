@@ -10,14 +10,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.financeapp.ui.transactions.DropdownMenu
 
@@ -26,10 +24,10 @@ fun Topbar(
     modifier: Modifier = Modifier,
     title: String = "Finance App",
     showMenu: Boolean = false,
-    onMenuClick: () -> Unit = {}
+    onShowBudgetClick: () -> Unit = {},
 ) {
     Surface(modifier = modifier) {
-        var expanednMenu by remember { mutableStateOf(false) }
+        var expandedMenu by remember { mutableStateOf(false) }
 
         CenterAlignedTopAppBar(
             title = {
@@ -41,15 +39,16 @@ fun Topbar(
             },
             navigationIcon = {
                 if (showMenu) {
-                    IconButton(onClick = { expanednMenu = !expanednMenu }) {
+                    IconButton(onClick = { expandedMenu = !expandedMenu }) {
                         Icon(
                             Icons.Default.Menu,
                             contentDescription = "Menu"
                         )
                     }
                     DropdownMenu(
-                        expaned = expanednMenu,
-                        onDismissRequest = { expanednMenu = false }
+                        expanded = expandedMenu,
+                        onDismissRequest = { expandedMenu = false },
+                        onShowBudgetClick = onShowBudgetClick
                     )
                 }
             },

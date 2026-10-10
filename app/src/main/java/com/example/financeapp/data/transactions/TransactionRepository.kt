@@ -15,7 +15,16 @@ interface TransactionRepository {
     suspend fun getTransactionsByType(type: TransactionType): List<Transaction>
     suspend fun getTransactionsByCategory(categoryId: Int): List<Transaction>
     suspend fun getTransactionsByDatesAndCategory(startDate: Instant, endDate: Instant, categoryId: Int): List<Transaction>
-    suspend fun getTransactionsWithCategory(): List<TransactionWithCategory>
+    fun getTransactionsWithCategory(): Flow<List<TransactionWithCategory>>
+    fun getFilteredTransactionsWithCategory(
+        isFilterByDate: Boolean,
+        startDate: Instant,
+        endDate: Instant,
+        isFilterByCategory: Boolean,
+        categoryId: Int,
+        isFilterByType: Boolean,
+        filterType: TransactionType
+    ): Flow<List<TransactionWithCategory>>
     suspend fun updateTransactionAmount(id: Int, amount: Double)
     suspend fun updateTransactionCategory(id: Int, categoryId: Int)
     suspend fun updateTransactionType(id: Int, type: TransactionType)

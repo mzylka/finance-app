@@ -7,6 +7,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavHostController
@@ -21,12 +24,15 @@ fun FinanceApp(
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val isTransactionScreen = navBackStackEntry?.destination?.hasRoute<TransactionsScreen>() == true
     val title = if (isTransactionScreen) "Transactions" else "Finance App"
+    var showMonthlyBudget by rememberSaveable { mutableStateOf(false) }
+    val onShowBudgetClick = { showMonthlyBudget = !showMonthlyBudget }
+
     Scaffold(
         topBar = {
             Topbar(
                 title = title,
                 showMenu = isTransactionScreen,
-                onMenuClick = {}
+                onShowBudgetClick = onShowBudgetClick
             )
         },
         bottomBar = { BottomBar(navController = navController) },
@@ -36,7 +42,11 @@ fun FinanceApp(
             modifier = Modifier.padding(innerPadding),
             color = MaterialTheme.colorScheme.background
         ) {
-            AppNavHost(navController = navController)
+            AppNavHost(
+                navController = navController,
+                showMonthlyBudget = showMonthlyBudget,
+                onShowBudgetClick = onShowBudgetClick
+            )
         }
     }
 

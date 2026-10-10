@@ -5,11 +5,12 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BudgetDAO {
     @Query("SELECT * FROM monthlyBudget WHERE id = 1 LIMIT 1")
-    suspend fun getBudget() : Budget?
+    fun getBudget() : Flow<Budget>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(budget: Budget)

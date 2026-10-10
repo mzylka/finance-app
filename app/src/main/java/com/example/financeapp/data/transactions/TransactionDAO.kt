@@ -37,7 +37,25 @@ interface TransactionDAO {
 
     @RoomTransaction
     @Query("SELECT * FROM transactions ORDER BY date DESC")
-    suspend fun getTransactionsWithCategory(): List<TransactionWithCategory>
+    fun getTransactionsWithCategory(): Flow<List<TransactionWithCategory>>
+
+    @RoomTransaction
+    @Query("""
+        SELECT * FROM transactions 
+        WHERE (:isFilterByDate = 0 OR date BETWEEN :startDate AND :endDate)
+          AND (:isFilterByCategory = 0 OR categoryId = :categoryId)
+          AND (:isFilterByType = 0 OR type = :filterType)
+        ORDER BY date DESC
+    """)
+    fun getFilteredTransactionsWithCategory(
+        isFilterByDate: Boolean,
+        startDate: Instant,
+        endDate: Instant,
+        isFilterByCategory: Boolean,
+        categoryId: Int,
+        isFilterByType: Boolean,
+        filterType: TransactionType
+    ): Flow<List<TransactionWithCategory>>
 
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun deleteTransactionById(id: Int)

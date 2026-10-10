@@ -49,8 +49,22 @@ class TransactionRepositoryImpl @Inject constructor(
         return transactionDao.getTransactionsByDatesAndCategory(startDate, endDate, categoryId)
     }
 
-    override suspend fun getTransactionsWithCategory(): List<TransactionWithCategory> {
+    override fun getTransactionsWithCategory(): Flow<List<TransactionWithCategory>> {
         return transactionDao.getTransactionsWithCategory()
+    }
+
+    override fun getFilteredTransactionsWithCategory(
+        isFilterByDate: Boolean,
+        startDate: Instant,
+        endDate: Instant,
+        isFilterByCategory: Boolean,
+        categoryId: Int,
+        isFilterByType: Boolean,
+        filterType: TransactionType
+    ): Flow<List<TransactionWithCategory>> {
+        return transactionDao.getFilteredTransactionsWithCategory(
+            isFilterByDate, startDate, endDate, isFilterByCategory, categoryId, isFilterByType, filterType
+        )
     }
 
     override suspend fun updateTransactionAmount(id: Int, amount: Double) {

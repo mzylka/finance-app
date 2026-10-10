@@ -21,7 +21,12 @@ object TransactionsScreen {}
 object StatisticScreen {}
 
 @Composable
-fun AppNavHost(modifier: Modifier = Modifier, navController: NavHostController) {
+fun AppNavHost(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    showMonthlyBudget: Boolean = false,
+    onShowBudgetClick: () -> Unit = {}
+) {
     NavHost(
         navController = navController,
         startDestination = MainMenuScreen,
@@ -31,7 +36,10 @@ fun AppNavHost(modifier: Modifier = Modifier, navController: NavHostController) 
             Home()
         }
         composable<TransactionsScreen>() {
-            Transactions()
+            Transactions(
+                showMonthlyBudget = showMonthlyBudget,
+                onShowBudgetClick = onShowBudgetClick
+            )
         }
         composable<StatisticScreen>() {
             Statistics()

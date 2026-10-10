@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -40,16 +41,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.financeapp.data.TransactionType
+import com.example.financeapp.data.categories.Category
 
 @Composable
 fun AddTransactionFullScreenDialog(
     onDismissRequest: () -> Unit,
-    onSave: (amount: Double, category: String, type: TransactionType) -> Unit
+    onSave: (amount: Double, categoryId: Int, type: TransactionType) -> Unit,
+    categories: List<Category> = emptyList()
 ) {
     var amountText by rememberSaveable { mutableStateOf("") }
+    var selectedCategoryId by rememberSaveable { mutableIntStateOf(categories.firstOrNull()?.id ?: 0) }
 
-    val categories = listOf("Jedzenie", "Rachunki", "Rozrywka", "Transport", "Inne")
-    var selectedCategory by rememberSaveable { mutableStateOf(categories.first()) }
+    LaunchedEffect(categories) {
+        if ((selectedCategoryId == 0 || categories.none { it.id == selectedCategoryId }) && categories.isNotEmpty()) {
+            selectedCategoryId = categories.first().id
+        }
+    }
+
+    val selectedCategory = categories.find { it.id == selectedCategoryId }
+        ?: categories.firstOrNull()
+        ?: Category(id = 0, name = "No Category")
+
     var isCategoryExpanded by rememberSaveable { mutableStateOf(false) }
 
     val types = TransactionType.entries
@@ -81,7 +93,7 @@ fun AddTransactionFullScreenDialog(
                                     if (parsedAmount != null && parsedAmount > 0) {
                                         onSave(
                                             parsedAmount,
-                                            selectedCategory,
+                                            selectedCategory.id,
                                             types[selectedTypeIndex]
                                         )
                                         onDismissRequest()
@@ -134,7 +146,7 @@ fun AddTransactionFullScreenDialog(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         OutlinedTextField(
-                            value = selectedCategory,
+                            value = selectedCategory.name,
                             onValueChange = {},
                             readOnly = true,
                             label = { Text("Category") },
@@ -149,9 +161,9 @@ fun AddTransactionFullScreenDialog(
                         ) {
                             categories.forEach { category ->
                                 DropdownMenuItem(
-                                    text = { Text(category) },
+                                    text = { Text(category.name) },
                                     onClick = {
-                                        selectedCategory = category
+                                        selectedCategoryId = category.id
                                         isCategoryExpanded = false
                                     }
                                 )

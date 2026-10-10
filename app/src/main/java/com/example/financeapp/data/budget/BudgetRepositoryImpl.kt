@@ -1,10 +1,11 @@
 package com.example.financeapp.data.budget
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class BudgetRepositoryImpl @Inject constructor(
     private val budgetDao: BudgetDAO
 ) : BudgetRepository {
-    override suspend fun getBudget(): Budget? {
+    override fun getBudget(): Flow<Budget> {
         return budgetDao.getBudget()
     }
 
