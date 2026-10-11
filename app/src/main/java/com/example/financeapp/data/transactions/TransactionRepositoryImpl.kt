@@ -3,6 +3,7 @@ package com.example.financeapp.data.transactions
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
+import java.math.BigDecimal
 import javax.inject.Inject
 import kotlin.time.Instant
 
@@ -67,7 +68,7 @@ class TransactionRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun updateTransactionAmount(id: Int, amount: Double) {
+    override suspend fun updateTransactionAmount(id: Int, amount: BigDecimal) {
         return transactionDao.updateTransactionAmount(id, amount)
     }
 

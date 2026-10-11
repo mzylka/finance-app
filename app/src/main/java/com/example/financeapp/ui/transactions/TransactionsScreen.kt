@@ -45,7 +45,7 @@ fun Transactions(
     }
 
     if (showAddTransactionDialog) {
-        AddTransactionFullScreenDialog(
+        AddTransactionDialog(
             onDismissRequest = { showAddTransactionDialog = false},
             categories = uiState.categories,
             onSave = { amount, categoryId, type ->

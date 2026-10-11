@@ -3,6 +3,7 @@ package com.example.financeapp.data.transactions
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
+import java.math.BigDecimal
 import kotlin.time.Instant
 
 interface TransactionRepository {
@@ -25,7 +26,7 @@ interface TransactionRepository {
         isFilterByType: Boolean,
         filterType: TransactionType
     ): Flow<List<TransactionWithCategory>>
-    suspend fun updateTransactionAmount(id: Int, amount: Double)
+    suspend fun updateTransactionAmount(id: Int, amount: BigDecimal)
     suspend fun updateTransactionCategory(id: Int, categoryId: Int)
     suspend fun updateTransactionType(id: Int, type: TransactionType)
 }

@@ -22,6 +22,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -29,7 +31,7 @@ import kotlin.time.Instant
 data class TransactionState (
     val transactions: List<TransactionWithCategory> = emptyList(),
     val categories: List<Category> = emptyList(),
-    val budgetAmount: Double = 0.00
+    val budgetAmount: BigDecimal = BigDecimal.ZERO
 )
 
 data class FilterState(
@@ -131,13 +133,14 @@ class TransactionViewModel @Inject constructor(
     }
 
     // User Actions
-    fun addTransaction(amount: Double, categoryId: Int, type: TransactionType) {
+    fun addTransaction(amount: BigDecimal, categoryId: Int, type: TransactionType) {
         viewModelScope.launch {
+            val roundedAmount = amount.setScale(2, RoundingMode.HALF_UP)
             val transaction = Transaction(
                 id = 0,
                 date = Clock.System.now(),
                 categoryId = categoryId,
-                amount = amount,
+                amount = roundedAmount,
                 type = type
             )
             transactionRepository.insertTransaction(transaction)
@@ -150,9 +153,10 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun updateTransactionAmount(id: Int, amount: Double) {
+    fun updateTransactionAmount(id: Int, amount: BigDecimal) {
         viewModelScope.launch {
-            transactionRepository.updateTransactionAmount(id, amount)
+            val roundedAmount = amount.setScale(2, RoundingMode.HALF_UP)
+            transactionRepository.updateTransactionAmount(id, roundedAmount)
         }
     }
 
@@ -162,9 +166,10 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun updateMonthlyBudget(amount: Double) {
+    fun updateMonthlyBudget(amount: BigDecimal) {
         viewModelScope.launch {
-            val budget = Budget(id = 1, amount = amount)
+            val roundedAmount = amount.setScale(2, RoundingMode.HALF_UP)
+            val budget = Budget(id = 1, amount = roundedAmount)
             budgetRepository.insertBudget(budget)
         }
     }

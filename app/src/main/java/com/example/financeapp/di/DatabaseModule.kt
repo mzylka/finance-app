@@ -59,6 +59,7 @@ object DatabaseModule {
             AppDatabase::class.java,
             "finance_app_db"
         )
+            .fallbackToDestructiveMigration(true)
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
@@ -69,9 +70,9 @@ object DatabaseModule {
                     db.execSQL("INSERT INTO categories (name) VALUES ('Bills & Utilities')")
                     db.execSQL("INSERT INTO categories (name) VALUES ('Salary')")
 
-                    db.execSQL("INSERT INTO monthlyBudget (id, amount) VALUES (1, 0.0)")
+                    db.execSQL("INSERT INTO monthlyBudget (id, amount) VALUES (1, 1000)")
 
-                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (12, 1, 100, 'INCOME')")
+                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (12, 1, 10000, 'INCOME')")
                 }
             })
             .build()

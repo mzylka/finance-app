@@ -15,7 +15,7 @@ import com.example.financeapp.data.transactions.TransactionDAO
     version = 1,
     exportSchema = false
 )
-@TypeConverters(DateConverters::class)
+@TypeConverters(DateConverters::class, MoneyConverter::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun transactionDao(): TransactionDAO
     abstract fun categoryDao(): CategoryDAO

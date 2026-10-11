@@ -7,6 +7,7 @@ import androidx.room.Transaction as RoomTransaction
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
+import java.math.BigDecimal
 import kotlin.time.Instant
 
 @Dao
@@ -61,7 +62,7 @@ interface TransactionDAO {
     suspend fun deleteTransactionById(id: Int)
 
     @Query("UPDATE transactions SET amount = :amount WHERE id = :id")
-    suspend fun updateTransactionAmount(id: Int, amount: Double)
+    suspend fun updateTransactionAmount(id: Int, amount: BigDecimal)
 
     @Query("UPDATE transactions SET categoryId = :categoryId WHERE id = :id")
     suspend fun updateTransactionCategory(id: Int, categoryId: Int)

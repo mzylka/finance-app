@@ -1,6 +1,5 @@
 package com.example.financeapp.ui.transactions
 
-import android.R.attr.type
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

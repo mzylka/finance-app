@@ -42,11 +42,13 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.categories.Category
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Composable
-fun AddTransactionFullScreenDialog(
+fun AddTransactionDialog(
     onDismissRequest: () -> Unit,
-    onSave: (amount: Double, categoryId: Int, type: TransactionType) -> Unit,
+    onSave: (amount: BigDecimal, categoryId: Int, type: TransactionType) -> Unit,
     categories: List<Category> = emptyList()
 ) {
     var amountText by rememberSaveable { mutableStateOf("") }
@@ -89,8 +91,8 @@ fun AddTransactionFullScreenDialog(
                         actions = {
                             TextButton(
                                 onClick = {
-                                    val parsedAmount = amountText.toDoubleOrNull()
-                                    if (parsedAmount != null && parsedAmount > 0) {
+                                    val parsedAmount = amountText.replace(',', '.').toBigDecimalOrNull()?.setScale(2, RoundingMode.HALF_UP)
+                                    if (parsedAmount != null && parsedAmount > BigDecimal.ZERO) {
                                         onSave(
                                             parsedAmount,
                                             selectedCategory.id,
