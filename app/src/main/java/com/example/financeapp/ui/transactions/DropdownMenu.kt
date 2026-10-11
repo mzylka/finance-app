@@ -11,7 +11,8 @@ fun DropdownMenu(
     modifier: Modifier = Modifier,
     expanded: Boolean = false,
     onDismissRequest: () -> Unit = {},
-    onShowBudgetClick: () -> Unit = {}
+    onShowBudgetClick: () -> Unit = {},
+    onShowFiltersClick: () -> Unit = {}
 ) {
     DropdownMenu(
         expanded = expanded,
@@ -24,7 +25,7 @@ fun DropdownMenu(
         )
         DropdownMenuItem(
             text = { Text("Filter") },
-            onClick = { /* Do something... */ }
+            onClick = { onShowFiltersClick() }
         )
     }
 }

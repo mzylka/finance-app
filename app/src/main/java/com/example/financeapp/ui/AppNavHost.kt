@@ -25,7 +25,9 @@ fun AppNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController,
     showMonthlyBudget: Boolean = false,
-    onShowBudgetClick: () -> Unit = {}
+    onShowBudgetClick: () -> Unit = {},
+    showFilters: Boolean = false,
+    onShowFiltersClick: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -38,7 +40,9 @@ fun AppNavHost(
         composable<TransactionsScreen>() {
             Transactions(
                 showMonthlyBudget = showMonthlyBudget,
-                onShowBudgetClick = onShowBudgetClick
+                onShowBudgetClick = onShowBudgetClick,
+                showFilters = showFilters,
+                onShowFiltersClick = onShowFiltersClick
             )
         }
         composable<StatisticScreen>() {

@@ -26,13 +26,16 @@ fun FinanceApp(
     val title = if (isTransactionScreen) "Transactions" else "Finance App"
     var showMonthlyBudget by rememberSaveable { mutableStateOf(false) }
     val onShowBudgetClick = { showMonthlyBudget = !showMonthlyBudget }
+    var showFilters by rememberSaveable { mutableStateOf(false) }
+    val onShowFiltersClick = { showFilters = !showFilters }
 
     Scaffold(
         topBar = {
             Topbar(
                 title = title,
                 showMenu = isTransactionScreen,
-                onShowBudgetClick = onShowBudgetClick
+                onShowBudgetClick = onShowBudgetClick,
+                onShowFiltersClick = onShowFiltersClick
             )
         },
         bottomBar = { BottomBar(navController = navController) },
@@ -45,7 +48,9 @@ fun FinanceApp(
             AppNavHost(
                 navController = navController,
                 showMonthlyBudget = showMonthlyBudget,
-                onShowBudgetClick = onShowBudgetClick
+                onShowBudgetClick = onShowBudgetClick,
+                showFilters = showFilters,
+                onShowFiltersClick = onShowFiltersClick
             )
         }
     }

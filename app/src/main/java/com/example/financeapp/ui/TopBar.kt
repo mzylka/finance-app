@@ -25,6 +25,7 @@ fun Topbar(
     title: String = "Finance App",
     showMenu: Boolean = false,
     onShowBudgetClick: () -> Unit = {},
+    onShowFiltersClick: () -> Unit = {}
 ) {
     Surface(modifier = modifier) {
         var expandedMenu by remember { mutableStateOf(false) }
@@ -48,7 +49,8 @@ fun Topbar(
                     DropdownMenu(
                         expanded = expandedMenu,
                         onDismissRequest = { expandedMenu = false },
-                        onShowBudgetClick = onShowBudgetClick
+                        onShowBudgetClick = onShowBudgetClick,
+                        onShowFiltersClick = onShowFiltersClick
                     )
                 }
             },
