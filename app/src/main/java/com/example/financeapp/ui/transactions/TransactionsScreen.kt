@@ -17,7 +17,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.example.financeapp.data.TransactionType
 import com.example.financeapp.ui.theme.FinanceAppTheme
 
 @Composable
@@ -68,10 +67,15 @@ fun Transactions(
 
     if (showFilters) {
         FiltersDialog(
-            onDismissRequest = { onShowFiltersClick() },
+            currentFilter = uiState.currentFilter,
             categories = uiState.categories,
-            types = TransactionType.entries,
-            onApply = { }
+            onDismissRequest = { onShowFiltersClick() },
+            onApply = { startDate, endDate, categoryId, type ->
+                viewModel.applyFilters(startDate, endDate, categoryId, type)
+            },
+            onClear = {
+                viewModel.clearFilters()
+            }
         )
     }
 }

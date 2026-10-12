@@ -43,14 +43,16 @@ interface TransactionDAO {
     @RoomTransaction
     @Query("""
         SELECT * FROM transactions 
-        WHERE (:isFilterByDate = 0 OR date BETWEEN :startDate AND :endDate)
+        WHERE (:hasStartDate = 0 OR date >= :startDate)
+          AND (:hasEndDate = 0 OR date <= :endDate)
           AND (:isFilterByCategory = 0 OR categoryId = :categoryId)
           AND (:isFilterByType = 0 OR type = :filterType)
         ORDER BY date DESC
     """)
     fun getFilteredTransactionsWithCategory(
-        isFilterByDate: Boolean,
+        hasStartDate: Boolean,
         startDate: Instant,
+        hasEndDate: Boolean,
         endDate: Instant,
         isFilterByCategory: Boolean,
         categoryId: Int,

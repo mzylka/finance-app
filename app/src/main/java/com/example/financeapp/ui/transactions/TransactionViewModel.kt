@@ -1,6 +1,5 @@
 package com.example.financeapp.ui.transactions
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.data.TransactionType
@@ -16,7 +15,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -31,18 +29,16 @@ import kotlin.time.Instant
 data class TransactionState (
     val transactions: List<TransactionWithCategory> = emptyList(),
     val categories: List<Category> = emptyList(),
-    val budgetAmount: BigDecimal = BigDecimal.ZERO
+    val budgetAmount: BigDecimal = BigDecimal.ZERO,
+    val currentFilter: FilterState = FilterState()
 )
 
 data class FilterState(
     val searchQuery: String = "",
-    val isFilterByDate: Boolean = false,
-    val startDate: Long = 0L,
-    val endDate: Long = 0L,
-    val isFilterByCategory: Boolean = false,
-    val categoryId: Int = 0,
-    val isFilterByType: Boolean = false,
-    val type: TransactionType = TransactionType.INCOME
+    val startDate: Long? = null,
+    val endDate: Long? = null,
+    val categoryId: Int? = null,
+    val type: TransactionType? = null
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -52,33 +48,7 @@ class TransactionViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository,
     private val budgetRepository: BudgetRepository
 ) : ViewModel() {
-    private val searchQuery = MutableStateFlow("")
-    private val isFilterByDate = MutableStateFlow(false)
-    private val filterStartDate = MutableStateFlow(Clock.System.now().toEpochMilliseconds())
-    private val filterEndDate = MutableStateFlow(Clock.System.now().toEpochMilliseconds())
-
-    private val isFilterByCategory = MutableStateFlow(false)
-    private val filterCategory = MutableStateFlow(0)
-
-    private val isFilterByTypes = MutableStateFlow(false)
-    private val filterType = MutableStateFlow(TransactionType.INCOME)
-
-    private val filterState = combine(
-        combine(searchQuery, isFilterByDate, filterStartDate) { q, b, s -> Triple(q, b, s) },
-        combine(filterEndDate, isFilterByCategory, filterCategory) { e, isCat, cat -> Triple(e, isCat, cat) },
-        combine(isFilterByTypes, filterType) { isType, type -> Pair(isType, type) }
-    ) { t1, t2, pair ->
-        FilterState(
-            searchQuery = t1.first,
-            isFilterByDate = t1.second,
-            startDate = t1.third,
-            endDate = t2.first,
-            isFilterByCategory = t2.second,
-            categoryId = t2.third,
-            isFilterByType = pair.first,
-            type = pair.second
-        )
-    }
+    private val filterState = MutableStateFlow(FilterState())
 
     val uiState: StateFlow<TransactionState> = combine(
         categoryRepository.getAllCategories(),
@@ -87,24 +57,40 @@ class TransactionViewModel @Inject constructor(
     ) { categories, filters, budget ->
         Triple(categories, filters, budget)
     }.flatMapLatest { (categories, filters, budget) ->
-        val startDate = Instant.fromEpochMilliseconds(filters.startDate)
-        val endDate = Instant.fromEpochMilliseconds(filters.endDate)
+        val hasStartDate = filters.startDate != null
+        val startDate = Instant.fromEpochMilliseconds(filters.startDate ?: 0L)
+
+        val hasEndDate = filters.endDate != null
+        val endDateMillis = filters.endDate?.let { it + 86_399_999L } ?: 0L //end of the day
+        val endDate = Instant.fromEpochMilliseconds(endDateMillis)
+
+        val isFilterByCategory = filters.categoryId != null && filters.categoryId > 0
+        val categoryId = filters.categoryId ?: 0
+
+        val isFilterByType = filters.type != null
+        val filterType = filters.type ?: TransactionType.INCOME
 
         transactionRepository.getFilteredTransactionsWithCategory(
-            isFilterByDate = filters.isFilterByDate,
+            hasStartDate = hasStartDate,
             startDate = startDate,
+            hasEndDate = hasEndDate,
             endDate = endDate,
-            isFilterByCategory = filters.isFilterByCategory,
-            categoryId = filters.categoryId,
-            isFilterByType = filters.isFilterByType,
-            filterType = filters.type
+            isFilterByCategory = isFilterByCategory,
+            categoryId = categoryId,
+            isFilterByType = isFilterByType,
+            filterType = filterType
         ).map { transactionsWithCategory ->
             val filtered = transactionsWithCategory.filter { item ->
                 filters.searchQuery.isBlank() ||
                     item.category.name.contains(filters.searchQuery, ignoreCase = true) ||
                     item.transaction.amount.toString().contains(filters.searchQuery)
             }
-            TransactionState(transactions = filtered, categories = categories, budgetAmount = budget.amount)
+            TransactionState(
+                transactions = filtered,
+                categories = categories,
+                budgetAmount = budget.amount,
+                currentFilter = filters
+            )
         }
     }.stateIn(
         scope = viewModelScope,
@@ -113,23 +99,30 @@ class TransactionViewModel @Inject constructor(
     )
 
     fun setSearchQuery(query: String) {
-        searchQuery.value = query
+        filterState.value = filterState.value.copy(searchQuery = query)
     }
 
-    fun setDateFilter(enabled: Boolean, startDate: Long = filterStartDate.value, endDate: Long = filterEndDate.value) {
-        isFilterByDate.value = enabled
-        filterStartDate.value = startDate
-        filterEndDate.value = endDate
+    fun applyFilters(
+        startDate: Long?,
+        endDate: Long?,
+        categoryId: Int?,
+        type: TransactionType?
+    ) {
+        filterState.value = filterState.value.copy(
+            startDate = startDate,
+            endDate = endDate,
+            categoryId = categoryId,
+            type = type
+        )
     }
 
-    fun setCategoryFilter(enabled: Boolean, categoryId: Int = filterCategory.value) {
-        isFilterByCategory.value = enabled
-        filterCategory.value = categoryId
-    }
-
-    fun setTypeFilter(enabled: Boolean, type: TransactionType = filterType.value) {
-        isFilterByTypes.value = enabled
-        filterType.value = type
+    fun clearFilters() {
+        filterState.value = filterState.value.copy(
+            startDate = null,
+            endDate = null,
+            categoryId = null,
+            type = null
+        )
     }
 
     // User Actions

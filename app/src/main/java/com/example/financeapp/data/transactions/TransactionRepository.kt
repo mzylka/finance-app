@@ -18,8 +18,9 @@ interface TransactionRepository {
     suspend fun getTransactionsByDatesAndCategory(startDate: Instant, endDate: Instant, categoryId: Int): List<Transaction>
     fun getTransactionsWithCategory(): Flow<List<TransactionWithCategory>>
     fun getFilteredTransactionsWithCategory(
-        isFilterByDate: Boolean,
+        hasStartDate: Boolean,
         startDate: Instant,
+        hasEndDate: Boolean,
         endDate: Instant,
         isFilterByCategory: Boolean,
         categoryId: Int,

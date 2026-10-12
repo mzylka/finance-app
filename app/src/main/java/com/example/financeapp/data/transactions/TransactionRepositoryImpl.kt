@@ -55,8 +55,9 @@ class TransactionRepositoryImpl @Inject constructor(
     }
 
     override fun getFilteredTransactionsWithCategory(
-        isFilterByDate: Boolean,
+        hasStartDate: Boolean,
         startDate: Instant,
+        hasEndDate: Boolean,
         endDate: Instant,
         isFilterByCategory: Boolean,
         categoryId: Int,
@@ -64,7 +65,7 @@ class TransactionRepositoryImpl @Inject constructor(
         filterType: TransactionType
     ): Flow<List<TransactionWithCategory>> {
         return transactionDao.getFilteredTransactionsWithCategory(
-            isFilterByDate, startDate, endDate, isFilterByCategory, categoryId, isFilterByType, filterType
+            hasStartDate, startDate, hasEndDate, endDate, isFilterByCategory, categoryId, isFilterByType, filterType
         )
     }
 
