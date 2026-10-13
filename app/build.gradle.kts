@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.mpchartlib)
+    implementation(libs.mpchartcompose)
     ksp(libs.hilt.android.compiler)
     ksp(libs.androidx.room.compiler)
     testImplementation(libs.junit)

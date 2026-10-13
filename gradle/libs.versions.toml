@@ -10,7 +10,10 @@ lifecycle = "2.11.0"
 activityCompose = "1.13.0"
 kotlin = "2.4.20"
 composeBom = "2026.09.00"
+mpchartcompose = "v4.0.1"
+mpchartlib = "v4.0.1"
 room = "2.8.5"
+mpAndroidChart = "v3.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -38,6 +41,9 @@ androidx-compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-te
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-core = { group = "androidx.compose.material", name = "material-icons-core" }
 androidx-compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpAndroidChart" }
+mpchartcompose = { module = "com.github.PhilJay.MPAndroidChart:MPChartCompose", version.ref = "mpchartcompose" }
+mpchartlib = { module = "com.github.PhilJay.MPAndroidChart:MPChartLib", version.ref = "mpchartlib" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
