@@ -27,6 +27,9 @@ interface TransactionDAO {
     @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate")
     suspend fun getTransactionsByDateRange(startDate: Instant, endDate: Instant): List<Transaction>
 
+    @Query("SELECT * FROM transactions WHERE date BETWEEN :startDate AND :endDate")
+    fun getTransactionsInDateRangeStream(startDate: Instant, endDate: Instant): Flow<List<Transaction>>
+
     @Query("SELECT * FROM transactions WHERE type = :type")
     suspend fun getTransactionsByType(type: TransactionType): List<Transaction>
 

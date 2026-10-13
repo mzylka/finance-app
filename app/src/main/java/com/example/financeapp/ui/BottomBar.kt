@@ -16,28 +16,31 @@ import androidx.navigation.NavHostController
 @Composable
 fun BottomBar(
     modifier: Modifier = Modifier,
-    navController: NavHostController
+    navController: NavHostController,
+    isTransactionScreen: Boolean = false,
+    isStatisticScreen: Boolean = false,
+    isMenuScreen: Boolean = false
 ) {
     NavigationBar(
         modifier = modifier
     ) {
         NavigationBarItem(
             label = { Text("Home") },
-            selected = true,
+            selected = isMenuScreen,
             onClick = { navController.navigate(MainMenuScreen) },
             icon = { Icon(Icons.Filled.Home, contentDescription = null) },
             modifier = Modifier.fillMaxWidth()
         )
         NavigationBarItem(
             label = { Text("Transactions") },
-            selected = false,
+            selected = isTransactionScreen,
             onClick = { navController.navigate(TransactionsScreen) },
             icon = { Icon(Icons.Filled.AttachMoney, contentDescription = null) },
             modifier = Modifier.fillMaxWidth()
         )
         NavigationBarItem(
             label = { Text("Statistics") },
-            selected = false,
+            selected = isStatisticScreen,
             onClick = { navController.navigate(StatisticScreen) },
             icon = { Icon(Icons.Filled.Analytics, contentDescription = null) },
             modifier = Modifier.fillMaxWidth()

@@ -21,6 +21,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import kotlin.time.Clock
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -63,6 +64,7 @@ object DatabaseModule {
             .addCallback(object : RoomDatabase.Callback() {
                 override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
+                    val dateNow = Clock.System.now().toEpochMilliseconds()
                     db.execSQL("INSERT INTO categories (name) VALUES ('Food & Dining')")
                     db.execSQL("INSERT INTO categories (name) VALUES ('Transportation')")
                     db.execSQL("INSERT INTO categories (name) VALUES ('Shopping')")
@@ -70,9 +72,13 @@ object DatabaseModule {
                     db.execSQL("INSERT INTO categories (name) VALUES ('Bills & Utilities')")
                     db.execSQL("INSERT INTO categories (name) VALUES ('Salary')")
 
-                    db.execSQL("INSERT INTO monthlyBudget (id, amount) VALUES (1, 1000)")
+                    db.execSQL("INSERT INTO monthlyBudget (id, amount) VALUES (1, 0)")
 
-                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (12, 1, 10000, 'INCOME')")
+                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (${dateNow}, 1, 10000, 'INCOME')")
+                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (${dateNow}, 2, 20000, 'EXPENSE')")
+                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (${dateNow}, 3, 30000, 'EXPENSE')")
+                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (${dateNow}, 4, 40000, 'EXPENSE')")
+                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (${dateNow}, 5, 40000, 'EXPENSE')")
                 }
             })
             .build()

@@ -3,7 +3,10 @@ package com.example.financeapp.data.transactions
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 import kotlin.time.Instant
 
@@ -82,5 +85,26 @@ class TransactionRepositoryImpl @Inject constructor(
         type: TransactionType
     ) {
         return transactionDao.updateTransactionType(id, type)
+    }
+
+    override fun getCurrentMonthTotalAmount(): Flow<BigDecimal> {
+        val zoneId = ZoneId.systemDefault()
+        val now = LocalDate.now(zoneId)
+        val startOfMonth = Instant.fromEpochMilliseconds(
+            now.withDayOfMonth(1).atStartOfDay(zoneId).toInstant().toEpochMilli()
+        )
+        val endOfMonth = Instant.fromEpochMilliseconds(
+            now.withDayOfMonth(now.lengthOfMonth())
+                .atTime(23, 59, 59, 999_000_000)
+                .atZone(zoneId)
+                .toInstant()
+                .toEpochMilli()
+        )
+        return transactionDao.getTransactionsInDateRangeStream(startOfMonth, endOfMonth)
+            .map { transactions ->
+                transactions.fold(BigDecimal.ZERO) { acc, transaction ->
+                    acc + transaction.signedAmount
+                }
+            }
     }
 }

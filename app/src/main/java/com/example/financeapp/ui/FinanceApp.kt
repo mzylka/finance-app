@@ -23,11 +23,15 @@ fun FinanceApp(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val isTransactionScreen = navBackStackEntry?.destination?.hasRoute<TransactionsScreen>() == true
+    val isStatisticScreen = navBackStackEntry?.destination?.hasRoute<StatisticScreen>() == true
+    val isMenuScreen = navBackStackEntry?.destination?.hasRoute<MainMenuScreen>() == true
     val title = if (isTransactionScreen) "Transactions" else "Finance App"
     var showMonthlyBudget by rememberSaveable { mutableStateOf(false) }
     val onShowBudgetClick = { showMonthlyBudget = !showMonthlyBudget }
     var showFilters by rememberSaveable { mutableStateOf(false) }
     val onShowFiltersClick = { showFilters = !showFilters }
+    var showManageCategories by rememberSaveable { mutableStateOf(false) }
+    val onShowManageCategoriesClick = { showManageCategories = !showManageCategories }
 
     Scaffold(
         topBar = {
@@ -35,10 +39,18 @@ fun FinanceApp(
                 title = title,
                 showMenu = isTransactionScreen,
                 onShowBudgetClick = onShowBudgetClick,
-                onShowFiltersClick = onShowFiltersClick
+                onShowFiltersClick = onShowFiltersClick,
+                onShowManageCategoriesClick = onShowManageCategoriesClick
             )
         },
-        bottomBar = { BottomBar(navController = navController) },
+        bottomBar = {
+            BottomBar(
+                isTransactionScreen = isTransactionScreen,
+                isStatisticScreen = isStatisticScreen,
+                isMenuScreen = isMenuScreen,
+                navController = navController
+            )
+        },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Surface(
@@ -50,7 +62,9 @@ fun FinanceApp(
                 showMonthlyBudget = showMonthlyBudget,
                 onShowBudgetClick = onShowBudgetClick,
                 showFilters = showFilters,
-                onShowFiltersClick = onShowFiltersClick
+                onShowFiltersClick = onShowFiltersClick,
+                showManageCategories = showManageCategories,
+                onShowManageCategoriesClick = onShowManageCategoriesClick
             )
         }
     }

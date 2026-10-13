@@ -12,6 +12,7 @@ import com.example.financeapp.data.transactions.Transaction
 import com.example.financeapp.data.transactions.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,15 +31,22 @@ data class TransactionState (
     val transactions: List<TransactionWithCategory> = emptyList(),
     val categories: List<Category> = emptyList(),
     val budgetAmount: BigDecimal = BigDecimal.ZERO,
-    val currentFilter: FilterState = FilterState()
+    val currentFilter: FilterState = FilterState(),
+    val totalAmountCurrentMonth: BigDecimal = BigDecimal.ZERO
 )
 
 data class FilterState(
-    val searchQuery: String = "",
     val startDate: Long? = null,
     val endDate: Long? = null,
     val categoryId: Int? = null,
     val type: TransactionType? = null
+)
+
+private data class CombinedData(
+    val categories: List<Category>,
+    val filters: FilterState,
+    val budget: Budget,
+    val monthTotal: BigDecimal
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -53,10 +61,12 @@ class TransactionViewModel @Inject constructor(
     val uiState: StateFlow<TransactionState> = combine(
         categoryRepository.getAllCategories(),
         filterState,
-        budgetRepository.getBudget()
-    ) { categories, filters, budget ->
-        Triple(categories, filters, budget)
-    }.flatMapLatest { (categories, filters, budget) ->
+        budgetRepository.getBudget(),
+        transactionRepository.getCurrentMonthTotalAmount()
+    ) { categories, filters, budget, monthTotal ->
+        CombinedData(categories, filters, budget, monthTotal)
+    }.flatMapLatest { combined ->
+        val filters = combined.filters
         val hasStartDate = filters.startDate != null
         val startDate = Instant.fromEpochMilliseconds(filters.startDate ?: 0L)
 
@@ -80,16 +90,12 @@ class TransactionViewModel @Inject constructor(
             isFilterByType = isFilterByType,
             filterType = filterType
         ).map { transactionsWithCategory ->
-            val filtered = transactionsWithCategory.filter { item ->
-                filters.searchQuery.isBlank() ||
-                    item.category.name.contains(filters.searchQuery, ignoreCase = true) ||
-                    item.transaction.amount.toString().contains(filters.searchQuery)
-            }
             TransactionState(
-                transactions = filtered,
-                categories = categories,
-                budgetAmount = budget.amount,
-                currentFilter = filters
+                transactions = transactionsWithCategory,
+                categories = combined.categories,
+                budgetAmount = combined.budget.amount,
+                currentFilter = filters,
+                totalAmountCurrentMonth = combined.monthTotal
             )
         }
     }.stateIn(
@@ -98,8 +104,8 @@ class TransactionViewModel @Inject constructor(
         initialValue = TransactionState()
     )
 
-    fun setSearchQuery(query: String) {
-        filterState.value = filterState.value.copy(searchQuery = query)
+    fun getCurrentMonthTotalAmount(): Flow<BigDecimal> {
+        return transactionRepository.getCurrentMonthTotalAmount()
     }
 
     fun applyFilters(
@@ -126,6 +132,20 @@ class TransactionViewModel @Inject constructor(
     }
 
     // User Actions
+    fun addCategory(name: String) {
+        viewModelScope.launch {
+            if (name.isNotBlank()) {
+                categoryRepository.insertCategory(Category(id = 0, name = name.trim()))
+            }
+        }
+    }
+
+    fun deleteCategory(id: Int) {
+        viewModelScope.launch {
+            categoryRepository.deleteCategoryById(id)
+        }
+    }
+
     fun addTransaction(amount: BigDecimal, categoryId: Int, type: TransactionType) {
         viewModelScope.launch {
             val roundedAmount = amount.setScale(2, RoundingMode.HALF_UP)

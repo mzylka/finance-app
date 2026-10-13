@@ -30,4 +30,5 @@ interface TransactionRepository {
     suspend fun updateTransactionAmount(id: Int, amount: BigDecimal)
     suspend fun updateTransactionCategory(id: Int, categoryId: Int)
     suspend fun updateTransactionType(id: Int, type: TransactionType)
+    fun getCurrentMonthTotalAmount(): Flow<BigDecimal>
 }

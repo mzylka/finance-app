@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.financeapp.data.TransactionType
@@ -33,10 +34,10 @@ fun TransactionComponent(transactionWithCategory: TransactionWithCategory, modif
         val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneId.systemDefault())
         Text(
             text = formatter.format(transactionWithCategory.transaction.date.toJavaInstant()),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1.5f),
             minLines = 2,
         )
-        Text(text = transactionWithCategory.category.name, modifier = Modifier.weight(1f), textAlign = TextAlign.Center)
+        Text(text = transactionWithCategory.category.name, modifier = Modifier.weight(2f), textAlign = TextAlign.Center)
         if (transactionWithCategory.transaction.type == TransactionType.INCOME) {
             Icon(
                 Icons.Filled.ArrowUpward,
@@ -53,6 +54,9 @@ fun TransactionComponent(transactionWithCategory: TransactionWithCategory, modif
                 modifier = Modifier.weight(1f)
             )
         }
-        Text(text = transactionWithCategory.transaction.amount.toString(), modifier = Modifier.weight(1f))
+        Text(
+            text = transactionWithCategory.transaction.amount.toString(),
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.weight(1f))
     }
 }

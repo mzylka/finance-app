@@ -12,7 +12,8 @@ fun DropdownMenu(
     expanded: Boolean = false,
     onDismissRequest: () -> Unit = {},
     onShowBudgetClick: () -> Unit = {},
-    onShowFiltersClick: () -> Unit = {}
+    onShowFiltersClick: () -> Unit = {},
+    onShowManageCategoriesClick: () -> Unit = {}
 ) {
     DropdownMenu(
         expanded = expanded,
@@ -21,11 +22,24 @@ fun DropdownMenu(
     ) {
         DropdownMenuItem(
             text = { Text("Change monthly budget") },
-            onClick = { onShowBudgetClick() }
+            onClick = {
+                onShowBudgetClick()
+                onDismissRequest()
+            }
         )
         DropdownMenuItem(
             text = { Text("Filter") },
-            onClick = { onShowFiltersClick() }
+            onClick = {
+                onShowFiltersClick()
+                onDismissRequest()
+            }
+        )
+        DropdownMenuItem(
+            text = { Text("Manage categories") },
+            onClick = {
+                onShowManageCategoriesClick()
+                onDismissRequest()
+            }
         )
     }
 }
