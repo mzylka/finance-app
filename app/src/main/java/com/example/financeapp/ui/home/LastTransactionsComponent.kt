@@ -1,4 +1,4 @@
-package com.example.financeapp.ui.menu
+package com.example.financeapp.ui.home
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

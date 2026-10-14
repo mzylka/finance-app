@@ -58,6 +58,10 @@ class TransactionRepositoryImpl @Inject constructor(
         return transactionDao.getTransactionsWithCategoryFlow()
     }
 
+    override fun getRecentTransactionsWithCategoryFlow(limit: Int): Flow<List<TransactionWithCategory>> {
+        return transactionDao.getRecentTransactionsWithCategoryFlow(limit)
+    }
+
     override suspend fun getTransactionsWithCategory(): List<TransactionWithCategory> {
         return transactionDao.getTransactionsWithCategory()
     }

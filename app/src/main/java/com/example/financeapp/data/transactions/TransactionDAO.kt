@@ -45,6 +45,10 @@ interface TransactionDAO {
     fun getTransactionsWithCategoryFlow(): Flow<List<TransactionWithCategory>>
 
     @RoomTransaction
+    @Query("SELECT * FROM transactions ORDER BY date DESC LIMIT :limit")
+    fun getRecentTransactionsWithCategoryFlow(limit: Int): Flow<List<TransactionWithCategory>>
+
+    @RoomTransaction
     @Query("SELECT * FROM transactions ORDER BY date DESC")
     suspend fun getTransactionsWithCategory(): List<TransactionWithCategory>
 

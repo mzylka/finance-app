@@ -1,4 +1,4 @@
-package com.example.financeapp.ui.menu
+package com.example.financeapp.ui.home
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
