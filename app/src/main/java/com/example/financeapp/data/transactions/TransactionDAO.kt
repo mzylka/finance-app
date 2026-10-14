@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction as RoomTransaction
+import com.example.financeapp.data.CategoryAmount
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
@@ -41,7 +42,11 @@ interface TransactionDAO {
 
     @RoomTransaction
     @Query("SELECT * FROM transactions ORDER BY date DESC")
-    fun getTransactionsWithCategory(): Flow<List<TransactionWithCategory>>
+    fun getTransactionsWithCategoryFlow(): Flow<List<TransactionWithCategory>>
+
+    @RoomTransaction
+    @Query("SELECT * FROM transactions ORDER BY date DESC")
+    suspend fun getTransactionsWithCategory(): List<TransactionWithCategory>
 
     @RoomTransaction
     @Query("""
@@ -78,7 +83,19 @@ interface TransactionDAO {
     @Query("UPDATE transactions SET date = :date WHERE id = :id")
     suspend fun updateTransactionDate(id: Int, date: Instant)
 
+    @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = :type")
+    fun getTotalAmountByType(type: TransactionType): Flow<BigDecimal>
 
+    @Query("SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = :type AND date BETWEEN :startDate AND :endDate")
+    fun getTotalAmountByTypeAndDateRange(type: TransactionType, startDate: Instant, endDate: Instant): Flow<BigDecimal>
 
-
+    @Query("""
+        SELECT c.name AS categoryName, COALESCE(SUM(t.amount), 0) AS totalAmount
+        FROM categories c
+        INNER JOIN transactions t ON c.id = t.categoryId
+        WHERE t.type = :type
+        GROUP BY c.id, c.name
+        ORDER BY totalAmount DESC
+    """)
+    fun getCategoryAmountsByType(type: TransactionType): Flow<List<CategoryAmount>>
 }

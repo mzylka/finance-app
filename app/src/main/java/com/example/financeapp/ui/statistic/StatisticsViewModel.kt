@@ -2,13 +2,12 @@ package com.example.financeapp.ui.statistic
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.financeapp.data.CategoryAmount
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import com.example.financeapp.data.budget.BudgetRepository
-import com.example.financeapp.data.categories.CategoryRepository
 import com.example.financeapp.data.transactions.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -19,34 +18,32 @@ import java.time.ZoneId
 import javax.inject.Inject
 import kotlin.time.Instant
 
-data class CategoryExpense(
-    val categoryName: String,
-    val totalExpense: BigDecimal
-)
-
 data class StatisticsUiState(
     val transactions: List<TransactionWithCategory> = emptyList(),
     val totalIncome: BigDecimal = BigDecimal.ZERO,
     val totalExpense: BigDecimal = BigDecimal.ZERO,
     val currentMonthExpense: BigDecimal = BigDecimal.ZERO,
+    val currentMonthIncome: BigDecimal = BigDecimal.ZERO,
     val monthlyBudget: BigDecimal = BigDecimal.ZERO,
-    val categoryExpenses: List<CategoryExpense> = emptyList(),
+    val categoryExpens: List<CategoryAmount> = emptyList(),
+    val categoryIncomes: List<CategoryAmount> = emptyList(),
     val isLoading: Boolean = false
 )
 
-@OptIn(ExperimentalCoroutinesApi::class)
+private data class Totals(
+    val totalIncome: BigDecimal,
+    val totalExpense: BigDecimal,
+    val currentMonthExpense: BigDecimal,
+    val currentMonthIncome: BigDecimal
+)
+
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val categoryRepository: CategoryRepository,
     private val budgetRepository: BudgetRepository
 ) : ViewModel() {
 
-    val uiState: StateFlow<StatisticsUiState> = combine(
-        transactionRepository.getTransactionsWithCategory(),
-        categoryRepository.getAllCategories(),
-        budgetRepository.getBudget()
-    ) { transactionsWithCategory, _, budget ->
+    private fun getCurrentMonthRange(): Pair<Instant, Instant> {
         val zoneId = ZoneId.systemDefault()
         val now = LocalDate.now(zoneId)
         val startOfMonth = Instant.fromEpochMilliseconds(
@@ -59,39 +56,53 @@ class StatisticsViewModel @Inject constructor(
                 .toInstant()
                 .toEpochMilli()
         )
+        return Pair(startOfMonth, endOfMonth)
+    }
 
-        val totalIncome = transactionsWithCategory
-            .filter { it.transaction.type == TransactionType.INCOME }
-            .fold(BigDecimal.ZERO) { acc, item -> acc + item.transaction.amount }
+    private val currentMonthRange = getCurrentMonthRange()
 
-        val totalExpense = transactionsWithCategory
-            .filter { it.transaction.type == TransactionType.EXPENSE }
-            .fold(BigDecimal.ZERO) { acc, item -> acc + item.transaction.amount }
+    private val totalsFlow = combine(
+        transactionRepository.getTotalAmountByType(TransactionType.INCOME),
+        transactionRepository.getTotalAmountByType(TransactionType.EXPENSE),
+        transactionRepository.getTotalAmountByTypeAndDateRange(
+            TransactionType.EXPENSE,
+            currentMonthRange.first,
+            currentMonthRange.second
+        ),
+        transactionRepository.getTotalAmountByTypeAndDateRange(
+            TransactionType.INCOME,
+            currentMonthRange.first,
+            currentMonthRange.second
+        )
+    ) { income, expense, monthExpense, monthIncome ->
+        Totals(
+            totalIncome = income,
+            totalExpense = expense,
+            currentMonthExpense = monthExpense,
+            currentMonthIncome = monthIncome
+        )
+    }
 
-        val currentMonthExpense = transactionsWithCategory
-            .filter {
-                it.transaction.type == TransactionType.EXPENSE &&
-                        it.transaction.date >= startOfMonth &&
-                        it.transaction.date <= endOfMonth
-            }
-            .fold(BigDecimal.ZERO) { acc, item -> acc + item.transaction.amount }
+    private val categoryBreakdownFlow = combine(
+        transactionRepository.getCategoryAmountsByType(TransactionType.EXPENSE),
+        transactionRepository.getCategoryAmountsByType(TransactionType.INCOME)
+    ) { categoryExpenses, categoryIncomes ->
+        Pair(categoryExpenses, categoryIncomes)
+    }
 
-        val categoryExpenses = transactionsWithCategory
-            .filter { it.transaction.type == TransactionType.EXPENSE }
-            .groupBy { it.category.name }
-            .map { (categoryName, list) ->
-                val total = list.fold(BigDecimal.ZERO) { acc, item -> acc + item.transaction.amount }
-                CategoryExpense(categoryName = categoryName, totalExpense = total)
-            }
-            .sortedByDescending { it.totalExpense }
-
+    val uiState: StateFlow<StatisticsUiState> = combine(
+        totalsFlow,
+        categoryBreakdownFlow,
+        budgetRepository.getBudget()
+    ) { totals, categoryBreakdown, budget ->
         StatisticsUiState(
-            transactions = transactionsWithCategory,
-            totalIncome = totalIncome,
-            totalExpense = totalExpense,
-            currentMonthExpense = currentMonthExpense,
+            totalIncome = totals.totalIncome,
+            totalExpense = totals.totalExpense,
+            currentMonthExpense = totals.currentMonthExpense,
+            currentMonthIncome = totals.currentMonthIncome,
             monthlyBudget = budget.amount,
-            categoryExpenses = categoryExpenses,
+            categoryExpens = categoryBreakdown.first,
+            categoryIncomes = categoryBreakdown.second,
             isLoading = false
         )
     }.stateIn(

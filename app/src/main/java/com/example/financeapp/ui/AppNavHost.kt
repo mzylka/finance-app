@@ -29,7 +29,9 @@ fun AppNavHost(
     showFilters: Boolean = false,
     onShowFiltersClick: () -> Unit = {},
     showManageCategories: Boolean = false,
-    onShowManageCategoriesClick: () -> Unit = {}
+    onShowManageCategoriesClick: () -> Unit = {},
+    showExport: Boolean = false,
+    onShowExportClick: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
@@ -46,7 +48,9 @@ fun AppNavHost(
                 showFilters = showFilters,
                 onShowFiltersClick = onShowFiltersClick,
                 showManageCategories = showManageCategories,
-                onShowManageCategoriesClick = onShowManageCategoriesClick
+                onShowManageCategoriesClick = onShowManageCategoriesClick,
+                showExport = showExport,
+                onShowExportClick = onShowExportClick
             )
         }
         composable<StatisticScreen>() {

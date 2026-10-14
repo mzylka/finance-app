@@ -13,7 +13,8 @@ fun DropdownMenu(
     onDismissRequest: () -> Unit = {},
     onShowBudgetClick: () -> Unit = {},
     onShowFiltersClick: () -> Unit = {},
-    onShowManageCategoriesClick: () -> Unit = {}
+    onShowManageCategoriesClick: () -> Unit = {},
+    onShowExportClick: () -> Unit = {}
 ) {
     DropdownMenu(
         expanded = expanded,
@@ -38,6 +39,13 @@ fun DropdownMenu(
             text = { Text("Manage categories") },
             onClick = {
                 onShowManageCategoriesClick()
+                onDismissRequest()
+            }
+        )
+        DropdownMenuItem(
+            text = { Text("Export") },
+            onClick = {
+                onShowExportClick()
                 onDismissRequest()
             }
         )

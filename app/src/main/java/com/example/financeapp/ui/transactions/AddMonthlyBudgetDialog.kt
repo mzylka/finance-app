@@ -33,7 +33,6 @@ fun AddMonthlyBudgetDialog(
     onSave: (monthlyBudget: BigDecimal) -> Unit
 ) {
     var amountText by rememberSaveable { mutableStateOf(budgetAmount.toString()) }
-    var isError by rememberSaveable { mutableStateOf(false) }
 
     Dialog(onDismissRequest) {
         Card(modifier = modifier.fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp)) {
@@ -51,7 +50,6 @@ fun AddMonthlyBudgetDialog(
                         }
                     }),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    isError = isError,
                     modifier = Modifier.fillMaxWidth().padding(16.dp)
                 )
                 Row(

@@ -1,5 +1,6 @@
 package com.example.financeapp.data.transactions
 
+import com.example.financeapp.data.CategoryAmount
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +17,9 @@ interface TransactionRepository {
     suspend fun getTransactionsByType(type: TransactionType): List<Transaction>
     suspend fun getTransactionsByCategory(categoryId: Int): List<Transaction>
     suspend fun getTransactionsByDatesAndCategory(startDate: Instant, endDate: Instant, categoryId: Int): List<Transaction>
-    fun getTransactionsWithCategory(): Flow<List<TransactionWithCategory>>
+    fun getTransactionsWithCategoryFlow(): Flow<List<TransactionWithCategory>>
+
+    suspend fun getTransactionsWithCategory(): List<TransactionWithCategory>
     fun getFilteredTransactionsWithCategory(
         hasStartDate: Boolean,
         startDate: Instant,
@@ -31,4 +34,7 @@ interface TransactionRepository {
     suspend fun updateTransactionCategory(id: Int, categoryId: Int)
     suspend fun updateTransactionType(id: Int, type: TransactionType)
     fun getCurrentMonthTotalAmount(): Flow<BigDecimal>
+    fun getTotalAmountByType(type: TransactionType): Flow<BigDecimal>
+    fun getTotalAmountByTypeAndDateRange(type: TransactionType, startDate: Instant, endDate: Instant): Flow<BigDecimal>
+    fun getCategoryAmountsByType(type: TransactionType): Flow<List<CategoryAmount>>
 }

@@ -1,5 +1,6 @@
 package com.example.financeapp.ui.transactions
 
+import android.R.attr.type
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.data.TransactionType
@@ -11,6 +12,7 @@ import com.example.financeapp.data.categories.CategoryRepository
 import com.example.financeapp.data.transactions.Transaction
 import com.example.financeapp.data.transactions.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.io.OutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
@@ -184,6 +187,18 @@ class TransactionViewModel @Inject constructor(
             val roundedAmount = amount.setScale(2, RoundingMode.HALF_UP)
             val budget = Budget(id = 1, amount = roundedAmount)
             budgetRepository.insertBudget(budget)
+        }
+    }
+
+    fun exportTransactionsToCsv(outputStream: OutputStream) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val transactions = transactionRepository.getTransactionsWithCategory()
+            outputStream.bufferedWriter().use { writer ->
+                writer.appendLine("Date,Category,Amount,Type")
+                for ((transaction, category) in transactions) {
+                    writer.appendLine("${transaction.date},${category.name},${transaction.amount},${transaction.type}")
+                }
+                }
         }
     }
 }

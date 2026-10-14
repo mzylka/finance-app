@@ -32,6 +32,9 @@ fun FinanceApp(
     val onShowFiltersClick = { showFilters = !showFilters }
     var showManageCategories by rememberSaveable { mutableStateOf(false) }
     val onShowManageCategoriesClick = { showManageCategories = !showManageCategories }
+    var showExport by rememberSaveable { mutableStateOf(false) }
+    val onShowExportClick = { showExport = !showExport }
+
 
     Scaffold(
         topBar = {
@@ -40,7 +43,8 @@ fun FinanceApp(
                 showMenu = isTransactionScreen,
                 onShowBudgetClick = onShowBudgetClick,
                 onShowFiltersClick = onShowFiltersClick,
-                onShowManageCategoriesClick = onShowManageCategoriesClick
+                onShowManageCategoriesClick = onShowManageCategoriesClick,
+                onShowExportClick = onShowExportClick
             )
         },
         bottomBar = {
@@ -64,7 +68,9 @@ fun FinanceApp(
                 showFilters = showFilters,
                 onShowFiltersClick = onShowFiltersClick,
                 showManageCategories = showManageCategories,
-                onShowManageCategoriesClick = onShowManageCategoriesClick
+                onShowManageCategoriesClick = onShowManageCategoriesClick,
+                showExport = showExport,
+                onShowExportClick = onShowExportClick
             )
         }
     }

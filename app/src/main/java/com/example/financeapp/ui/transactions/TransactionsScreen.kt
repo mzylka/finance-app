@@ -34,6 +34,8 @@ fun Transactions(
     onShowFiltersClick: () -> Unit = {},
     showManageCategories: Boolean = false,
     onShowManageCategoriesClick: () -> Unit = {},
+    showExport: Boolean = false,
+    onShowExportClick: () -> Unit = {},
     viewModel: TransactionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -107,6 +109,13 @@ fun Transactions(
             onDeleteCategory = { categoryId ->
                 viewModel.deleteCategory(categoryId)
             }
+        )
+    }
+
+    if (showExport) {
+        ExportToFileDialog(
+            viewModel = viewModel,
+            onDismissRequest = onShowExportClick
         )
     }
 }

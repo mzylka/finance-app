@@ -1,0 +1,36 @@
+package com.example.financeapp.ui.transactions
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+
+@Composable
+fun ExportToFileDialog(
+    modifier: Modifier = Modifier,
+    viewModel: TransactionViewModel,
+    onDismissRequest: () -> Unit,
+) {
+    Dialog(onDismissRequest) {
+        Card(modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp), shape = RoundedCornerShape(16.dp)) {
+            Column {
+                ExportButton(viewModel)
+                Button(
+                    onClick = onDismissRequest
+                ) {
+                    Text("Cancel")
+                }
+
+            }
+        }
+    }
+}

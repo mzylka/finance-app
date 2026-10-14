@@ -26,7 +26,8 @@ fun Topbar(
     showMenu: Boolean = false,
     onShowBudgetClick: () -> Unit = {},
     onShowFiltersClick: () -> Unit = {},
-    onShowManageCategoriesClick: () -> Unit = {}
+    onShowManageCategoriesClick: () -> Unit = {},
+    onShowExportClick: () -> Unit = {}
 ) {
     Surface(modifier = modifier) {
         var expandedMenu by remember { mutableStateOf(false) }
@@ -52,7 +53,8 @@ fun Topbar(
                         onDismissRequest = { expandedMenu = false },
                         onShowBudgetClick = onShowBudgetClick,
                         onShowFiltersClick = onShowFiltersClick,
-                        onShowManageCategoriesClick = onShowManageCategoriesClick
+                        onShowManageCategoriesClick = onShowManageCategoriesClick,
+                        onShowExportClick = onShowExportClick
                     )
                 }
             },

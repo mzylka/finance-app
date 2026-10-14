@@ -1,5 +1,6 @@
 package com.example.financeapp.data.transactions
 
+import com.example.financeapp.data.CategoryAmount
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
@@ -53,7 +54,11 @@ class TransactionRepositoryImpl @Inject constructor(
         return transactionDao.getTransactionsByDatesAndCategory(startDate, endDate, categoryId)
     }
 
-    override fun getTransactionsWithCategory(): Flow<List<TransactionWithCategory>> {
+    override fun getTransactionsWithCategoryFlow(): Flow<List<TransactionWithCategory>> {
+        return transactionDao.getTransactionsWithCategoryFlow()
+    }
+
+    override suspend fun getTransactionsWithCategory(): List<TransactionWithCategory> {
         return transactionDao.getTransactionsWithCategory()
     }
 
@@ -106,5 +111,21 @@ class TransactionRepositoryImpl @Inject constructor(
                     acc + transaction.signedAmount
                 }
             }
+    }
+
+    override fun getTotalAmountByType(type: TransactionType): Flow<BigDecimal> {
+        return transactionDao.getTotalAmountByType(type)
+    }
+
+    override fun getTotalAmountByTypeAndDateRange(
+        type: TransactionType,
+        startDate: Instant,
+        endDate: Instant
+    ): Flow<BigDecimal> {
+        return transactionDao.getTotalAmountByTypeAndDateRange(type, startDate, endDate)
+    }
+
+    override fun getCategoryAmountsByType(type: TransactionType): Flow<List<CategoryAmount>> {
+        return transactionDao.getCategoryAmountsByType(type)
     }
 }

@@ -26,6 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.financeapp.data.CategoryAmount
 import com.example.financeapp.ui.theme.FinanceAppTheme
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.compose.HorizontalBarChart
@@ -96,6 +97,22 @@ fun Statistics(
         }
 
         Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = "Monthly Budget", fontSize = 14.sp)
+                Text(
+                    text = "$${uiState.monthlyBudget}",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(320.dp),
@@ -110,12 +127,13 @@ fun Statistics(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Current Month Expense vs Budget",
+                    text = "Current Month Expense vs Budget+Income",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
                 ExpenseVsBudgetPieChart(
                     currentMonthExpense = uiState.currentMonthExpense.toFloat(),
+                    currentMonthIncome = uiState.currentMonthIncome.toFloat(),
                     monthlyBudget = uiState.monthlyBudget.toFloat(),
                     modifier = Modifier.fillMaxSize()
                 )
@@ -125,7 +143,7 @@ fun Statistics(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height((120 + uiState.categoryExpenses.size * 45).coerceIn(240, 420).dp),
+                .height((120 + uiState.categoryExpens.size * 45).coerceIn(240, 420).dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
             )
@@ -142,7 +160,33 @@ fun Statistics(
                     fontWeight = FontWeight.Bold
                 )
                 ExpenseByCategoryBarChart(
-                    categoryExpenses = uiState.categoryExpenses,
+                    categoryAmounts = uiState.categoryExpens,
+                    isExpense = true,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height((120 + uiState.categoryExpens.size * 45).coerceIn(240, 420).dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Incomes by Category",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                ExpenseByCategoryBarChart(
+                    categoryAmounts = uiState.categoryIncomes,
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -153,19 +197,17 @@ fun Statistics(
 @Composable
 fun ExpenseVsBudgetPieChart(
     currentMonthExpense: Float,
+    currentMonthIncome: Float,
     monthlyBudget: Float,
     modifier: Modifier = Modifier
 ) {
-    val remainingBudget = maxOf(0f, monthlyBudget - currentMonthExpense)
+    val remainingBudget = maxOf(0f, monthlyBudget + currentMonthIncome - currentMonthExpense)
     val entries = ArrayList<PieEntry<Any>>()
     if (currentMonthExpense > 0f) {
         entries.add(PieEntry(currentMonthExpense, "Spent ($${currentMonthExpense.toInt()})"))
     }
     if (remainingBudget > 0f) {
         entries.add(PieEntry(remainingBudget, "Remaining ($${remainingBudget.toInt()})"))
-    }
-    if (entries.isEmpty() && monthlyBudget > 0f) {
-        entries.add(PieEntry(monthlyBudget, "Budget ($${monthlyBudget.toInt()})"))
     }
 
     val dataSet = PieDataSet(entries, "").apply {
@@ -183,11 +225,10 @@ fun ExpenseVsBudgetPieChart(
         modifier = modifier,
         setup = {
             description.isEnabled = false
-            isDrawHoleEnabled = true
+            isDrawHoleEnabled = false
             holeRadius = 45f
             transparentCircleRadius = 50f
             isUsePercentValuesEnabled = false
-            centerText = "Expense / Budget"
             legend.apply {
                 isEnabled = true
                 textSize = 12f
@@ -198,29 +239,32 @@ fun ExpenseVsBudgetPieChart(
 
 @Composable
 fun ExpenseByCategoryBarChart(
-    categoryExpenses: List<CategoryExpense>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    categoryAmounts: List<CategoryAmount>,
+    isExpense: Boolean = false,
 ) {
-    if (categoryExpenses.isEmpty()) {
+    val textColorOnSurface = MaterialTheme.colorScheme.onSurfaceVariant.toArgb()
+    val type = if (isExpense) "Expense" else "Income"
+    if (categoryAmounts.isEmpty()) {
         Box(
             modifier = modifier,
             contentAlignment = Alignment.Center
         ) {
-            Text(text = "No category expenses recorded")
+            Text(text = "No category ${type}s recorded")
         }
         return
     }
 
-    val sortedList = categoryExpenses.reversed()
+    val sortedList = categoryAmounts.reversed()
     val labels = sortedList.map { item -> item.categoryName }
     val entries = sortedList.mapIndexed { index, item ->
-        BarEntry(index.toFloat(), item.totalExpense.toFloat())
+        BarEntry(index.toFloat(), item.totalAmount.toFloat())
     }
 
-    val dataSet = BarDataSet(entries, "Expenses by Category").apply {
-        color = Color.Red.toArgb()
+    val dataSet = BarDataSet(entries, "${type}s by Category").apply {
+        color = if (isExpense) Color.Red.toArgb() else Color.Green.toArgb()
         valueTextSize = 12f
-        valueTextColor = Color.Black.toArgb()
+        valueTextColor = textColorOnSurface
     }
     val barData = BarData(dataSet).apply {
         barWidth = 0.5f
@@ -240,7 +284,7 @@ fun ExpenseByCategoryBarChart(
                 isDrawGridLinesEnabled = false
                 granularity = 1f
                 textSize = 11f
-                textColor = Color.Black.toArgb()
+                textColor = textColorOnSurface
                 valueFormatter = IndexAxisValueFormatter(labels)
             }
 
@@ -248,7 +292,7 @@ fun ExpenseByCategoryBarChart(
                 isDrawGridLinesEnabled = true
                 axisMinimum = 0f
                 textSize = 10f
-                textColor = Color.Black.toArgb()
+                textColor = textColorOnSurface
             }
 
             axisRight.isEnabled = false
