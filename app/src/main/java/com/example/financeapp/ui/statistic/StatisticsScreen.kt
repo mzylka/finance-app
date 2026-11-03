@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.financeapp.data.CategoryAmount
+import com.example.financeapp.ui.shared.AmountCard
 import com.example.financeapp.ui.theme.FinanceAppTheme
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.compose.HorizontalBarChart
@@ -63,54 +64,28 @@ fun Statistics(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Card(
+            AmountCard(
                 modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "Total Income", fontSize = 14.sp)
-                    Text(
-                        text = "$${uiState.totalIncome}",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
-            Card(
-                modifier = Modifier.weight(1f),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer
-                )
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "Total Expense", fontSize = 14.sp)
-                    Text(
-                        text = "$${uiState.totalExpense}",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.onPrimaryContainer
+                title = "Total Income",
+                amount = uiState.totalIncome,
+                currency = uiState.selectedCurrency,
+                color = MaterialTheme.colorScheme.primaryContainer
             )
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Monthly Budget", fontSize = 14.sp)
-                Text(
-                    text = "$${uiState.monthlyBudget}",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+            AmountCard(
+                modifier = Modifier.weight(1f),
+                title = "Total Expense",
+                amount = uiState.totalExpense,
+                currency = uiState.selectedCurrency,
+                color = MaterialTheme.colorScheme.errorContainer
+            )
         }
+        AmountCard(
+            modifier = Modifier.fillMaxWidth(),
+            title = "Monthly Budget",
+            amount = uiState.monthlyBudget,
+            currency = uiState.selectedCurrency,
+            color = MaterialTheme.colorScheme.onPrimaryContainer
+        )
 
         Card(
             modifier = Modifier

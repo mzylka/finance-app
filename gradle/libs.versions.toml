@@ -14,6 +14,7 @@ mpchartcompose = "v4.0.1"
 mpchartlib = "v4.0.1"
 room = "2.8.5"
 mpAndroidChart = "v3.1.0"
+coroutinesTest = "1.10.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -44,9 +45,9 @@ androidx-compose-material-icons-extended = { group = "androidx.compose.material"
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpAndroidChart" }
 mpchartcompose = { module = "com.github.PhilJay.MPAndroidChart:MPChartCompose", version.ref = "mpchartcompose" }
 mpchartlib = { module = "com.github.PhilJay.MPAndroidChart:MPChartLib", version.ref = "mpchartlib" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-

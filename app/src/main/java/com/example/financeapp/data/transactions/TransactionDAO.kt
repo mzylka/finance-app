@@ -2,6 +2,7 @@ package com.example.financeapp.data.transactions
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction as RoomTransaction
 import com.example.financeapp.data.CategoryAmount
@@ -13,7 +14,7 @@ import kotlin.time.Instant
 
 @Dao
 interface TransactionDAO {
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(transaction: Transaction)
 
     @Query("SELECT * FROM transactions ORDER BY date DESC")

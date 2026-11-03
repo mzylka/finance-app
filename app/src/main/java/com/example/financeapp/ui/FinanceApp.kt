@@ -25,7 +25,13 @@ fun FinanceApp(
     val isTransactionScreen = navBackStackEntry?.destination?.hasRoute<TransactionsScreen>() == true
     val isStatisticScreen = navBackStackEntry?.destination?.hasRoute<StatisticScreen>() == true
     val isMenuScreen = navBackStackEntry?.destination?.hasRoute<MainMenuScreen>() == true
-    val title = if (isTransactionScreen) "Transactions" else "Finance App"
+    val isSettingsScreen = navBackStackEntry?.destination?.hasRoute<SettingsScreen>() == true
+    val title = when {
+        isTransactionScreen -> "Transactions"
+        isStatisticScreen -> "Statistics"
+        isSettingsScreen -> "Settings"
+        else -> "Finance App"
+    }
     var showMonthlyBudget by rememberSaveable { mutableStateOf(false) }
     val onShowBudgetClick = { showMonthlyBudget = !showMonthlyBudget }
     var showFilters by rememberSaveable { mutableStateOf(false) }
@@ -52,6 +58,7 @@ fun FinanceApp(
                 isTransactionScreen = isTransactionScreen,
                 isStatisticScreen = isStatisticScreen,
                 isMenuScreen = isMenuScreen,
+                isSettingsScreen = isSettingsScreen,
                 navController = navController
             )
         },

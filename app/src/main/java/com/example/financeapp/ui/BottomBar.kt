@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -19,7 +20,8 @@ fun BottomBar(
     navController: NavHostController,
     isTransactionScreen: Boolean = false,
     isStatisticScreen: Boolean = false,
-    isMenuScreen: Boolean = false
+    isMenuScreen: Boolean = false,
+    isSettingsScreen: Boolean = false
 ) {
     NavigationBar(
         modifier = modifier
@@ -43,6 +45,13 @@ fun BottomBar(
             selected = isStatisticScreen,
             onClick = { navController.navigate(StatisticScreen) },
             icon = { Icon(Icons.Filled.Analytics, contentDescription = null) },
+            modifier = Modifier.fillMaxWidth()
+        )
+        NavigationBarItem(
+            label = { Text("Settings") },
+            selected = isSettingsScreen,
+            onClick = { navController.navigate(SettingsScreen) },
+            icon = { Icon(Icons.Filled.Settings, contentDescription = null) },
             modifier = Modifier.fillMaxWidth()
         )
     }

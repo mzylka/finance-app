@@ -6,6 +6,7 @@ import com.example.financeapp.data.CategoryAmount
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import com.example.financeapp.data.budget.BudgetRepository
+import com.example.financeapp.data.preferences.UserPreferencesRepository
 import com.example.financeapp.data.transactions.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,6 +28,7 @@ data class StatisticsUiState(
     val monthlyBudget: BigDecimal = BigDecimal.ZERO,
     val categoryExpens: List<CategoryAmount> = emptyList(),
     val categoryIncomes: List<CategoryAmount> = emptyList(),
+    val selectedCurrency: String = "$",
     val isLoading: Boolean = false
 )
 
@@ -40,7 +42,8 @@ private data class Totals(
 @HiltViewModel
 class StatisticsViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val budgetRepository: BudgetRepository
+    private val budgetRepository: BudgetRepository,
+    private val preferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private fun getCurrentMonthRange(): Pair<Instant, Instant> {
@@ -93,8 +96,9 @@ class StatisticsViewModel @Inject constructor(
     val uiState: StateFlow<StatisticsUiState> = combine(
         totalsFlow,
         categoryBreakdownFlow,
-        budgetRepository.getBudget()
-    ) { totals, categoryBreakdown, budget ->
+        budgetRepository.getBudget(),
+        preferencesRepository.getCurrencySymbol()
+    ) { totals, categoryBreakdown, budget, currency ->
         StatisticsUiState(
             totalIncome = totals.totalIncome,
             totalExpense = totals.totalExpense,
@@ -103,6 +107,7 @@ class StatisticsViewModel @Inject constructor(
             monthlyBudget = budget.amount,
             categoryExpens = categoryBreakdown.first,
             categoryIncomes = categoryBreakdown.second,
+            selectedCurrency = currency,
             isLoading = false
         )
     }.stateIn(

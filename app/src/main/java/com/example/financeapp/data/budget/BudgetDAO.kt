@@ -12,9 +12,14 @@ interface BudgetDAO {
     @Query("SELECT * FROM monthlyBudget WHERE id = 1 LIMIT 1")
     fun getBudget() : Flow<Budget>
 
+    @Query("SELECT * FROM monthlyBudget WHERE id = 1 LIMIT 1")
+    suspend fun getBudgetDirect(): Budget?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(budget: Budget)
 
     @Update
     suspend fun update(budget: Budget)
+
+
 }

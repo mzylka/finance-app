@@ -1,6 +1,5 @@
 package com.example.financeapp.ui.transactions
 
-import android.R.attr.type
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.data.TransactionType
@@ -9,12 +8,12 @@ import com.example.financeapp.data.budget.Budget
 import com.example.financeapp.data.budget.BudgetRepository
 import com.example.financeapp.data.categories.Category
 import com.example.financeapp.data.categories.CategoryRepository
+import com.example.financeapp.data.preferences.UserPreferencesRepository
 import com.example.financeapp.data.transactions.Transaction
 import com.example.financeapp.data.transactions.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -35,7 +34,8 @@ data class TransactionState (
     val categories: List<Category> = emptyList(),
     val budgetAmount: BigDecimal = BigDecimal.ZERO,
     val currentFilter: FilterState = FilterState(),
-    val totalAmountCurrentMonth: BigDecimal = BigDecimal.ZERO
+    val totalAmountCurrentMonth: BigDecimal = BigDecimal.ZERO,
+    val selectedCurrency: String = "$"
 )
 
 data class FilterState(
@@ -49,7 +49,8 @@ private data class CombinedData(
     val categories: List<Category>,
     val filters: FilterState,
     val budget: Budget,
-    val monthTotal: BigDecimal
+    val monthTotal: BigDecimal,
+    val currency: String
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -57,7 +58,8 @@ private data class CombinedData(
 class TransactionViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val categoryRepository: CategoryRepository,
-    private val budgetRepository: BudgetRepository
+    private val budgetRepository: BudgetRepository,
+    private val preferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
     private val filterState = MutableStateFlow(FilterState())
 
@@ -65,9 +67,10 @@ class TransactionViewModel @Inject constructor(
         categoryRepository.getAllCategories(),
         filterState,
         budgetRepository.getBudget(),
-        transactionRepository.getCurrentMonthTotalAmount()
-    ) { categories, filters, budget, monthTotal ->
-        CombinedData(categories, filters, budget, monthTotal)
+        transactionRepository.getCurrentMonthTotalAmount(),
+        preferencesRepository.getCurrencySymbol()
+    ) { categories, filters, budget, monthTotal, currency ->
+        CombinedData(categories, filters, budget, monthTotal, currency)
     }.flatMapLatest { combined ->
         val filters = combined.filters
         val hasStartDate = filters.startDate != null
@@ -98,7 +101,8 @@ class TransactionViewModel @Inject constructor(
                 categories = combined.categories,
                 budgetAmount = combined.budget.amount,
                 currentFilter = filters,
-                totalAmountCurrentMonth = combined.monthTotal
+                totalAmountCurrentMonth = combined.monthTotal,
+                selectedCurrency = combined.currency
             )
         }
     }.stateIn(
@@ -106,10 +110,6 @@ class TransactionViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = TransactionState()
     )
-
-    fun getCurrentMonthTotalAmount(): Flow<BigDecimal> {
-        return transactionRepository.getCurrentMonthTotalAmount()
-    }
 
     fun applyFilters(
         startDate: Long?,
@@ -163,25 +163,6 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun deleteTransaction(id: Int) {
-        viewModelScope.launch {
-            transactionRepository.deleteTransactionById(id)
-        }
-    }
-
-    fun updateTransactionAmount(id: Int, amount: BigDecimal) {
-        viewModelScope.launch {
-            val roundedAmount = amount.setScale(2, RoundingMode.HALF_UP)
-            transactionRepository.updateTransactionAmount(id, roundedAmount)
-        }
-    }
-
-    fun updateTransactionCategory(id: Int, categoryId: Int) {
-        viewModelScope.launch {
-            transactionRepository.updateTransactionCategory(id, categoryId)
-        }
-    }
-
     fun updateMonthlyBudget(amount: BigDecimal) {
         viewModelScope.launch {
             val roundedAmount = amount.setScale(2, RoundingMode.HALF_UP)
@@ -198,7 +179,7 @@ class TransactionViewModel @Inject constructor(
                 for ((transaction, category) in transactions) {
                     writer.appendLine("${transaction.date},${category.name},${transaction.amount},${transaction.type}")
                 }
-                }
+            }
         }
     }
 }

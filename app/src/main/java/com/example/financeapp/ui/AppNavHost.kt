@@ -6,6 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.financeapp.ui.home.Home
+import com.example.financeapp.ui.settings.SettingsScreen
 import com.example.financeapp.ui.statistic.Statistics
 import com.example.financeapp.ui.transactions.Transactions
 import kotlinx.serialization.Serializable
@@ -18,6 +19,9 @@ object TransactionsScreen {}
 
 @Serializable
 object StatisticScreen {}
+
+@Serializable
+object SettingsScreen {}
 
 @Composable
 fun AppNavHost(
@@ -54,6 +58,9 @@ fun AppNavHost(
         }
         composable<StatisticScreen>() {
             Statistics()
+        }
+        composable<SettingsScreen>() {
+            SettingsScreen()
         }
     }
 }

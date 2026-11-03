@@ -3,6 +3,7 @@ package com.example.financeapp.ui.transactions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,8 +12,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.example.financeapp.ui.shared.AmountCard
 import com.example.financeapp.ui.theme.FinanceAppTheme
 
 @Composable
@@ -51,14 +53,28 @@ fun Transactions(
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding)) {
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.padding(horizontal = 4.dp)
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(text = "Month. Budget: ${uiState.budgetAmount}")
-                Text(text = "Total amount: ${uiState.totalAmountCurrentMonth}")
+                AmountCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Monthly Budget",
+                    amount = uiState.budgetAmount,
+                    currency = uiState.selectedCurrency,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                )
+                AmountCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Month. Total amount",
+                    amount = uiState.totalAmountCurrentMonth,
+                    currency = uiState.selectedCurrency,
+                    color = MaterialTheme.colorScheme.primaryContainer
+                )
             }
             HorizontalDivider(thickness = 2.dp, modifier = Modifier.padding(4.dp))
-            LazyColumn {
+            LazyColumn(
+                modifier = Modifier.padding(16.dp),
+            ) {
                 items(uiState.transactions) { transaction ->
                     TransactionComponent(transaction)
                 }

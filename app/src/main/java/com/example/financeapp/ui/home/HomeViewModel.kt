@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import com.example.financeapp.data.budget.BudgetRepository
+import com.example.financeapp.data.preferences.UserPreferencesRepository
 import com.example.financeapp.data.transactions.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,13 +23,15 @@ data class HomeUiState(
     val currentMonthIncome: BigDecimal = BigDecimal.ZERO,
     val currentMonthExpense: BigDecimal = BigDecimal.ZERO,
     val recentTransactions: List<TransactionWithCategory> = emptyList(),
+    val selectedCurrency: String = "$",
     val isLoading: Boolean = false
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
-    private val budgetRepository: BudgetRepository
+    private val budgetRepository: BudgetRepository,
+    private val preferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
 
     private fun getCurrentMonthRange(): Pair<Instant, Instant> {
@@ -67,13 +70,15 @@ class HomeViewModel @Inject constructor(
     val uiState: StateFlow<HomeUiState> = combine(
         budgetRepository.getBudget(),
         currentMonthAmountsFlow,
-        transactionRepository.getRecentTransactionsWithCategoryFlow(5)
-    ) { budget, monthAmounts, recentTransactions ->
+        transactionRepository.getRecentTransactionsWithCategoryFlow(5),
+        preferencesRepository.getCurrencySymbol()
+    ) { budget, monthAmounts, recentTransactions, currency ->
         HomeUiState(
             monthlyBudget = budget.amount,
             currentMonthIncome = monthAmounts.first,
             currentMonthExpense = monthAmounts.second,
             recentTransactions = recentTransactions,
+            selectedCurrency = currency,
             isLoading = false
         )
     }.stateIn(

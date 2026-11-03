@@ -1,6 +1,5 @@
-package com.example.financeapp
+package com.example.financeapp.data
 
-import com.example.financeapp.data.MoneyConverter
 import org.junit.Test
 import org.junit.Assert.*
 import java.math.BigDecimal

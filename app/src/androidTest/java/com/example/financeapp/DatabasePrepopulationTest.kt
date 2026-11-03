@@ -13,6 +13,7 @@ import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.math.BigDecimal
 
 @RunWith(AndroidJUnit4::class)
 class DatabasePrepopulationTest {
@@ -33,9 +34,9 @@ class DatabasePrepopulationTest {
                     db.execSQL("INSERT INTO categories (name) VALUES ('Bills & Utilities')")
                     db.execSQL("INSERT INTO categories (name) VALUES ('Salary')")
 
-                    db.execSQL("INSERT INTO monthlyBudget (id, amount) VALUES (1, 0.0)")
+                    db.execSQL("INSERT INTO monthlyBudget (id, amount) VALUES (1, 0)")
 
-                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (12, 1, 100, 'INCOME')")
+                    db.execSQL("INSERT INTO transactions (date, categoryId, amount, type) VALUES (12, 1, 10000, 'INCOME')")
                 }
             })
             .build()
@@ -47,7 +48,7 @@ class DatabasePrepopulationTest {
     }
 
     @Test
-    fun testCategoriesArePrepopulated() = runBlocking {
+    fun testCategoriesArePrepopulated(): Unit = runBlocking {
         val categories = database.categoryDao().getAllCategories()
         assertEquals(6, categories.size)
         assertEquals("Food & Dining", categories[0].name)
@@ -55,16 +56,16 @@ class DatabasePrepopulationTest {
     }
 
     @Test
-    fun testBudgetIsPrepopulated() = runBlocking {
-        val budget = database.budgetDao().getBudget()
+    fun testBudgetIsPrepopulated(): Unit = runBlocking {
+        val budget = database.budgetDao().getBudgetDirect()
         assertNotNull(budget)
-        assertEquals(0.0, budget?.amount ?: -1.0, 0.01)
+        assertEquals(BigDecimal("0.00"), budget?.amount)
     }
 
     @Test
-    fun testTransactionIsPrepopulated() = runBlocking {
+    fun testTransactionIsPrepopulated(): Unit = runBlocking {
         val transactions = database.transactionDao().getAllTransactions()
         assertEquals(1, transactions.size)
-        assertEquals(100.0, transactions[0].amount, 0.01)
+        assertEquals(BigDecimal("100.00"), transactions[0].amount)
     }
 }
