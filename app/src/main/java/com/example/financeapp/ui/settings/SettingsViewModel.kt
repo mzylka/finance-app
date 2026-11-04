@@ -39,7 +39,9 @@ class SettingsViewModel @Inject constructor(
     val backupStatus: StateFlow<BackupStatus> = _backupStatus.asStateFlow()
 
     fun updateCurrency(symbol: String) {
-        preferencesRepository.setCurrencySymbol(symbol)
+        viewModelScope.launch {
+            preferencesRepository.setCurrencySymbol(symbol)
+        }
     }
 
     fun exportBackup(outputStream: OutputStream) {

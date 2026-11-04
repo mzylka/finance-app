@@ -163,6 +163,12 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
+    fun deleteTransaction(id: Int) {
+        viewModelScope.launch {
+            transactionRepository.deleteTransactionById(id)
+        }
+    }
+
     fun updateMonthlyBudget(amount: BigDecimal) {
         viewModelScope.launch {
             val roundedAmount = amount.setScale(2, RoundingMode.HALF_UP)

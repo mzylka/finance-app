@@ -24,7 +24,7 @@ class FakeUserPreferencesRepository : UserPreferencesRepository {
 
     override fun getCurrencySymbol(): Flow<String> = currencyFlow
 
-    override fun setCurrencySymbol(symbol: String) {
+    override suspend fun setCurrencySymbol(symbol: String) {
         currencyFlow.value = symbol
     }
 }
@@ -213,5 +213,9 @@ class FakeTransactionRepository : TransactionRepository {
                     CategoryAmount(catName, total)
                 }
         }
+    }
+
+    override fun getMonthlyTotalsFromDate(startDate: Instant): Flow<List<com.example.financeapp.data.RawMonthlyTotal>> {
+        return transactionsFlow.map { emptyList() }
     }
 }

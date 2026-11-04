@@ -38,4 +38,5 @@ interface TransactionRepository {
     fun getTotalAmountByType(type: TransactionType): Flow<BigDecimal>
     fun getTotalAmountByTypeAndDateRange(type: TransactionType, startDate: Instant, endDate: Instant): Flow<BigDecimal>
     fun getCategoryAmountsByType(type: TransactionType): Flow<List<CategoryAmount>>
+    fun getMonthlyTotalsFromDate(startDate: Instant): Flow<List<com.example.financeapp.data.RawMonthlyTotal>>
 }

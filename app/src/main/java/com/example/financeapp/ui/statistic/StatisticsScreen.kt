@@ -27,9 +27,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.financeapp.data.CategoryAmount
+import com.example.financeapp.data.MonthlyTotals
 import com.example.financeapp.ui.shared.AmountCard
 import com.example.financeapp.ui.theme.FinanceAppTheme
 import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.compose.BarChart
 import com.github.mikephil.charting.compose.HorizontalBarChart
 import com.github.mikephil.charting.compose.PieChart
 import com.github.mikephil.charting.data.BarData
@@ -118,6 +120,33 @@ fun Statistics(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
+                .height(340.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Income & Expense (Last 12 Months)",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                MonthlyIncomeExpenseGroupedBarChart(
+                    monthlyTotals = uiState.monthlyTotals,
+                    currencySymbol = uiState.selectedCurrency,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
                 .height((120 + uiState.categoryExpens.size * 45).coerceIn(240, 420).dp),
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -170,6 +199,92 @@ fun Statistics(
 }
 
 @Composable
+fun MonthlyIncomeExpenseGroupedBarChart(
+    monthlyTotals: List<MonthlyTotals>,
+    currencySymbol: String,
+    modifier: Modifier = Modifier
+) {
+    val textColorOnSurface = MaterialTheme.colorScheme.onSurfaceVariant.toArgb()
+    val incomeColor = android.graphics.Color.rgb(102, 187, 106)
+    val expenseColor = android.graphics.Color.rgb(239, 83, 80)
+
+    if (monthlyTotals.isEmpty()) {
+        Box(
+            modifier = modifier,
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = "No monthly data available")
+        }
+        return
+    }
+
+    val labels = monthlyTotals.map { it.monthLabel }
+    val incomeEntries = monthlyTotals.mapIndexed { index, item ->
+        BarEntry(index.toFloat(), item.income.toFloat())
+    }
+    val expenseEntries = monthlyTotals.mapIndexed { index, item ->
+        BarEntry(index.toFloat(), item.expense.toFloat())
+    }
+
+    val incomeDataSet = BarDataSet(incomeEntries, "Income ($currencySymbol)").apply {
+        color = incomeColor
+        valueTextSize = 9f
+        valueTextColor = textColorOnSurface
+    }
+
+    val expenseDataSet = BarDataSet(expenseEntries, "Expense ($currencySymbol)").apply {
+        color = expenseColor
+        valueTextSize = 9f
+        valueTextColor = textColorOnSurface
+    }
+
+    val groupSpace = 0.28f
+    val barSpace = 0.06f
+    val barWidth = 0.3f
+
+    val barData = BarData(incomeDataSet, expenseDataSet).apply {
+        this.barWidth = barWidth
+    }
+
+    BarChart(
+        data = barData,
+        modifier = modifier,
+        setup = {
+            this.data = barData
+            description.isEnabled = false
+            legend.apply {
+                isEnabled = true
+                textSize = 11f
+                textColor = textColorOnSurface
+            }
+
+            xAxis.apply {
+                position = XAxis.XAxisPosition.BOTTOM
+                isDrawGridLinesEnabled = false
+                granularity = 1f
+                textSize = 10f
+                textColor = textColorOnSurface
+                valueFormatter = IndexAxisValueFormatter(labels)
+                axisMinimum = 0f
+                axisMaximum = 0f + barData.getGroupWidth(groupSpace, barSpace) * monthlyTotals.size
+                isCenterAxisLabelsEnabled = true
+            }
+
+            axisLeft.apply {
+                isDrawGridLinesEnabled = true
+                axisMinimum = 0f
+                textSize = 10f
+                textColor = textColorOnSurface
+            }
+
+            axisRight.isEnabled = false
+
+            groupBars(0f, groupSpace, barSpace)
+        }
+    )
+}
+
+@Composable
 fun ExpenseVsBudgetPieChart(
     currentMonthExpense: Float,
     currentMonthIncome: Float,
@@ -178,7 +293,7 @@ fun ExpenseVsBudgetPieChart(
 ) {
     val remainingBudget = maxOf(0f, monthlyBudget + currentMonthIncome - currentMonthExpense)
     val entries = ArrayList<PieEntry<Any>>()
-    if (currentMonthExpense > 0f) {
+    if (currentMonthExpense >= 0f) {
         entries.add(PieEntry(currentMonthExpense, "Spent ($${currentMonthExpense.toInt()})"))
     }
     if (remainingBudget > 0f) {

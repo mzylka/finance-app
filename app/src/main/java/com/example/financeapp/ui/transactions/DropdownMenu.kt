@@ -43,7 +43,7 @@ fun DropdownMenu(
             }
         )
         DropdownMenuItem(
-            text = { Text("Export") },
+            text = { Text("Export to CSV") },
             onClick = {
                 onShowExportClick()
                 onDismissRequest()

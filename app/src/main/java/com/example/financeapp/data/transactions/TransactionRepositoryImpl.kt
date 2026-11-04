@@ -132,4 +132,8 @@ class TransactionRepositoryImpl @Inject constructor(
     override fun getCategoryAmountsByType(type: TransactionType): Flow<List<CategoryAmount>> {
         return transactionDao.getCategoryAmountsByType(type)
     }
+
+    override fun getMonthlyTotalsFromDate(startDate: Instant): Flow<List<com.example.financeapp.data.RawMonthlyTotal>> {
+        return transactionDao.getMonthlyTotalsFromDate(startDate)
+    }
 }

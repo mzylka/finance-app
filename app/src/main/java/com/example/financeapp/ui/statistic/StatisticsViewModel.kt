@@ -3,19 +3,24 @@ package com.example.financeapp.ui.statistic
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.financeapp.data.CategoryAmount
+import com.example.financeapp.data.MonthlyTotals
 import com.example.financeapp.data.TransactionType
 import com.example.financeapp.data.TransactionWithCategory
 import com.example.financeapp.data.budget.BudgetRepository
 import com.example.financeapp.data.preferences.UserPreferencesRepository
 import com.example.financeapp.data.transactions.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
 import kotlin.time.Instant
 
@@ -28,6 +33,7 @@ data class StatisticsUiState(
     val monthlyBudget: BigDecimal = BigDecimal.ZERO,
     val categoryExpens: List<CategoryAmount> = emptyList(),
     val categoryIncomes: List<CategoryAmount> = emptyList(),
+    val monthlyTotals: List<MonthlyTotals> = emptyList(),
     val selectedCurrency: String = "$",
     val isLoading: Boolean = false
 )
@@ -64,6 +70,32 @@ class StatisticsViewModel @Inject constructor(
 
     private val currentMonthRange = getCurrentMonthRange()
 
+    private fun getTwelveMonthsAgoStart(): Instant {
+        val zoneId = ZoneId.systemDefault()
+        val startOf12MonthsAgo = LocalDate.now(zoneId)
+            .minusMonths(11)
+            .withDayOfMonth(1)
+            .atStartOfDay(zoneId)
+            .toInstant()
+            .toEpochMilli()
+        return Instant.fromEpochMilliseconds(startOf12MonthsAgo)
+    }
+
+    private val twelveMonthsAgoStart = getTwelveMonthsAgoStart()
+
+    private val last12MonthsList: List<Pair<String, String>> = buildList {
+        val zoneId = ZoneId.systemDefault()
+        val now = LocalDate.now(zoneId)
+        val monthFormatter = DateTimeFormatter.ofPattern("MMM", Locale.getDefault())
+        val ymFormatter = DateTimeFormatter.ofPattern("yyyy-MM", Locale.getDefault())
+        for (i in 11 downTo 0) {
+            val date = now.minusMonths(i.toLong()).withDayOfMonth(1)
+            val yearMonthStr = date.format(ymFormatter)
+            val monthLabelStr = date.format(monthFormatter)
+            add(yearMonthStr to monthLabelStr)
+        }
+    }
+
     private val totalsFlow = combine(
         transactionRepository.getTotalAmountByType(TransactionType.INCOME),
         transactionRepository.getTotalAmountByType(TransactionType.EXPENSE),
@@ -93,12 +125,29 @@ class StatisticsViewModel @Inject constructor(
         Pair(categoryExpenses, categoryIncomes)
     }
 
+    private val monthlyTotalsFlow: Flow<List<MonthlyTotals>> =
+        transactionRepository.getMonthlyTotalsFromDate(twelveMonthsAgoStart).map { rawList ->
+            val map = rawList.groupBy { it.yearMonth }
+            last12MonthsList.map { (yearMonth, monthLabel) ->
+                val entries = map[yearMonth] ?: emptyList()
+                val income = entries.find { it.type == TransactionType.INCOME }?.totalAmount ?: BigDecimal.ZERO
+                val expense = entries.find { it.type == TransactionType.EXPENSE }?.totalAmount ?: BigDecimal.ZERO
+                MonthlyTotals(
+                    yearMonth = yearMonth,
+                    monthLabel = monthLabel,
+                    income = income,
+                    expense = expense
+                )
+            }
+        }
+
     val uiState: StateFlow<StatisticsUiState> = combine(
         totalsFlow,
         categoryBreakdownFlow,
         budgetRepository.getBudget(),
-        preferencesRepository.getCurrencySymbol()
-    ) { totals, categoryBreakdown, budget, currency ->
+        preferencesRepository.getCurrencySymbol(),
+        monthlyTotalsFlow
+    ) { totals, categoryBreakdown, budget, currency, monthlyTotals ->
         StatisticsUiState(
             totalIncome = totals.totalIncome,
             totalExpense = totals.totalExpense,
@@ -107,6 +156,7 @@ class StatisticsViewModel @Inject constructor(
             monthlyBudget = budget.amount,
             categoryExpens = categoryBreakdown.first,
             categoryIncomes = categoryBreakdown.second,
+            monthlyTotals = monthlyTotals,
             selectedCurrency = currency,
             isLoading = false
         )

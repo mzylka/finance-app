@@ -103,4 +103,15 @@ interface TransactionDAO {
         ORDER BY totalAmount DESC
     """)
     fun getCategoryAmountsByType(type: TransactionType): Flow<List<CategoryAmount>>
+
+    @Query("""
+        SELECT strftime('%Y-%m', date / 1000, 'unixepoch') AS yearMonth,
+               type,
+               COALESCE(SUM(amount), 0) AS totalAmount
+        FROM transactions
+        WHERE date >= :startDate
+        GROUP BY yearMonth, type
+        ORDER BY yearMonth ASC
+    """)
+    fun getMonthlyTotalsFromDate(startDate: Instant): Flow<List<com.example.financeapp.data.RawMonthlyTotal>>
 }

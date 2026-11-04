@@ -1,17 +1,25 @@
 package com.example.financeapp.data.preferences
 
 import android.content.Context
-import android.content.SharedPreferences
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "user_preferences")
+
 interface UserPreferencesRepository {
     fun getCurrencySymbol(): Flow<String>
-    fun setCurrencySymbol(symbol: String)
+    suspend fun setCurrencySymbol(symbol: String)
 }
 
 @Singleton
@@ -19,29 +27,28 @@ class UserPreferencesRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : UserPreferencesRepository {
 
-    private val prefs: SharedPreferences =
-        context.getSharedPreferences("user_preferences", Context.MODE_PRIVATE)
-
-    override fun getCurrencySymbol(): Flow<String> = callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_CURRENCY) {
-                trySend(prefs.getString(KEY_CURRENCY, DEFAULT_CURRENCY) ?: DEFAULT_CURRENCY)
+    override fun getCurrencySymbol(): Flow<String> {
+        return context.dataStore.data
+            .catch { exception ->
+                if (exception is IOException) {
+                    emit(emptyPreferences())
+                } else {
+                    throw exception
+                }
             }
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        trySend(prefs.getString(KEY_CURRENCY, DEFAULT_CURRENCY) ?: DEFAULT_CURRENCY)
-
-        awaitClose {
-            prefs.unregisterOnSharedPreferenceChangeListener(listener)
-        }
+            .map { preferences ->
+                preferences[KEY_CURRENCY] ?: DEFAULT_CURRENCY
+            }
     }
 
-    override fun setCurrencySymbol(symbol: String) {
-        prefs.edit().putString(KEY_CURRENCY, symbol).apply()
+    override suspend fun setCurrencySymbol(symbol: String) {
+        context.dataStore.edit { preferences ->
+            preferences[KEY_CURRENCY] = symbol
+        }
     }
 
     companion object {
-        private const val KEY_CURRENCY = "key_currency_symbol"
+        private val KEY_CURRENCY = stringPreferencesKey("key_currency_symbol")
         private const val DEFAULT_CURRENCY = "$"
     }
 }

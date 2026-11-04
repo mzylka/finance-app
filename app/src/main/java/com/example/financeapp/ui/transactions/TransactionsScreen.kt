@@ -75,8 +75,11 @@ fun Transactions(
             LazyColumn(
                 modifier = Modifier.padding(16.dp),
             ) {
-                items(uiState.transactions) { transaction ->
-                    TransactionComponent(transaction)
+                items(uiState.transactions, key = { it.transaction.id }) { transaction ->
+                    TransactionComponent(
+                        transactionWithCategory = transaction,
+                        onDeleteTransaction = { id -> viewModel.deleteTransaction(id) }
+                    )
                 }
             }
         }
