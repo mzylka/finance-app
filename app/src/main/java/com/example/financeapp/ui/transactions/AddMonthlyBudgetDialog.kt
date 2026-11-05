@@ -33,22 +33,38 @@ fun AddMonthlyBudgetDialog(
     onSave: (monthlyBudget: BigDecimal) -> Unit
 ) {
     var amountText by rememberSaveable { mutableStateOf(budgetAmount.toString()) }
+    var isAmountError by rememberSaveable { mutableStateOf(false) }
+    var amountErrorMessage by rememberSaveable { mutableStateOf("") }
+
+    val handleSave = {
+        val parsedAmount = amountText.replace(',', '.').toBigDecimalOrNull()?.setScale(2, RoundingMode.HALF_UP)
+        if (parsedAmount != null && parsedAmount > BigDecimal.ZERO) {
+            onSave(parsedAmount)
+            onDismissRequest()
+        } else {
+            isAmountError = true
+            amountErrorMessage = "Please enter a valid amount greater than 0"
+        }
+    }
 
     Dialog(onDismissRequest) {
         Card(modifier = modifier.fillMaxWidth().padding(16.dp), shape = RoundedCornerShape(16.dp)) {
             Column {
                 OutlinedTextField(
                     value = amountText,
-                    onValueChange = { amountText = it },
+                    onValueChange = {
+                        amountText = it
+                        if (isAmountError) {
+                            isAmountError = false
+                        }
+                    },
                     label = { Text("Monthly Budget") },
                     singleLine = true,
-                    keyboardActions = KeyboardActions(onDone = {
-                        val parsedAmount = amountText.replace(',', '.').toBigDecimalOrNull()?.setScale(2, RoundingMode.HALF_UP)
-                        if (parsedAmount != null && parsedAmount > BigDecimal.ZERO) {
-                            onSave(parsedAmount)
-                            onDismissRequest()
-                        }
-                    }),
+                    isError = isAmountError,
+                    supportingText = if (isAmountError) {
+                        { Text(amountErrorMessage) }
+                    } else null,
+                    keyboardActions = KeyboardActions(onDone = { handleSave() }),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                     modifier = Modifier.fillMaxWidth().padding(16.dp)
                 )
@@ -60,13 +76,7 @@ fun AddMonthlyBudgetDialog(
                         Text("Cancel")
                     }
                     Button(
-                        onClick = {
-                            val parsedAmount = amountText.replace(',', '.').toBigDecimalOrNull()?.setScale(2, RoundingMode.HALF_UP)
-                            if (parsedAmount != null && parsedAmount > BigDecimal.ZERO) {
-                                onSave(parsedAmount)
-                                onDismissRequest()
-                            }
-                        }
+                        onClick = { handleSave() }
                     ) {
                         Text("Save")
                     }

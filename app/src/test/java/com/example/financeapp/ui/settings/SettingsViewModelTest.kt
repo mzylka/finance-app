@@ -77,4 +77,34 @@ class SettingsViewModelTest {
         assertTrue(backupRepo.importCalled)
         assertTrue(viewModel.backupStatus.value is BackupStatus.Success)
     }
+
+    @Test
+    fun testExportBackup_failure_setsErrorStatus() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.backupStatus.collect()
+        }
+
+        backupRepo.shouldThrowError = true
+        val outputStream = ByteArrayOutputStream()
+        viewModel.exportBackup(outputStream)
+
+        val status = viewModel.backupStatus.value
+        assertTrue(status is BackupStatus.Error)
+        assertEquals("Export failed: Disk write error during export", (status as BackupStatus.Error).message)
+    }
+
+    @Test
+    fun testImportBackup_failure_setsErrorStatus() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.backupStatus.collect()
+        }
+
+        backupRepo.shouldThrowError = true
+        val inputStream = ByteArrayInputStream("invalid json".toByteArray())
+        viewModel.importBackup(inputStream)
+
+        val status = viewModel.backupStatus.value
+        assertTrue(status is BackupStatus.Error)
+        assertEquals("Import failed: Malformed JSON during import", (status as BackupStatus.Error).message)
+    }
 }

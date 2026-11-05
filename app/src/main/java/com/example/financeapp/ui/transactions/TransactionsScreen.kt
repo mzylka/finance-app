@@ -121,12 +121,19 @@ fun Transactions(
     if (showManageCategories) {
         ManageCategoriesDialog(
             categories = uiState.categories,
-            onDismissRequest = { onShowManageCategoriesClick() },
+            categoryError = uiState.categoryError,
+            onDismissRequest = {
+                viewModel.clearCategoryError()
+                onShowManageCategoriesClick()
+            },
             onAddCategory = { categoryName ->
                 viewModel.addCategory(categoryName)
             },
             onDeleteCategory = { categoryId ->
                 viewModel.deleteCategory(categoryId)
+            },
+            onClearError = {
+                viewModel.clearCategoryError()
             }
         )
     }

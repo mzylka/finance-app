@@ -38,12 +38,15 @@ import com.example.financeapp.data.categories.Category
 fun ManageCategoriesDialog(
     modifier: Modifier = Modifier,
     categories: List<Category> = emptyList(),
+    categoryError: String? = null,
     onDismissRequest: () -> Unit,
     onAddCategory: (categoryName: String) -> Unit,
-    onDeleteCategory: (categoryId: Int) -> Unit
+    onDeleteCategory: (categoryId: Int) -> Unit,
+    onClearError: () -> Unit = {}
 ) {
     var newCategoryName by rememberSaveable { mutableStateOf("") }
-    var isError by rememberSaveable { mutableStateOf(false) }
+    var localError by rememberSaveable { mutableStateOf<String?>(null) }
+    val displayError = categoryError ?: localError
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
@@ -64,38 +67,50 @@ fun ManageCategoriesDialog(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     OutlinedTextField(
                         value = newCategoryName,
                         onValueChange = {
                             newCategoryName = it
-                            if (isError && it.isNotBlank()) {
-                                isError = false
-                            }
+                            if (localError != null) localError = null
+                            if (categoryError != null) onClearError()
                         },
                         label = { Text("New Category") },
                         singleLine = true,
-                        isError = isError,
+                        isError = displayError != null,
+                        supportingText = if (displayError != null) {
+                            { Text(displayError) }
+                        } else null,
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                         keyboardActions = KeyboardActions(onDone = {
-                            if (newCategoryName.isNotBlank()) {
+                            val trimmed = newCategoryName.trim()
+                            if (trimmed.isBlank()) {
+                                localError = "Category name cannot be blank"
+                            } else if (categories.any { it.name.equals(trimmed, ignoreCase = true) }) {
+                                localError = "Category already exists"
+                            } else {
+                                localError = null
+                                onClearError()
                                 onAddCategory(newCategoryName)
                                 newCategoryName = ""
-                            } else {
-                                isError = true
                             }
                         }),
                         modifier = Modifier.weight(1f)
                     )
                     Button(
                         onClick = {
-                            if (newCategoryName.isNotBlank()) {
+                            val trimmed = newCategoryName.trim()
+                            if (trimmed.isBlank()) {
+                                localError = "Category name cannot be blank"
+                            } else if (categories.any { it.name.equals(trimmed, ignoreCase = true) }) {
+                                localError = "Category already exists"
+                            } else {
+                                localError = null
+                                onClearError()
                                 onAddCategory(newCategoryName)
                                 newCategoryName = ""
-                            } else {
-                                isError = true
                             }
                         }
                     ) {

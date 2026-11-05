@@ -35,7 +35,8 @@ data class TransactionState (
     val budgetAmount: BigDecimal = BigDecimal.ZERO,
     val currentFilter: FilterState = FilterState(),
     val totalAmountCurrentMonth: BigDecimal = BigDecimal.ZERO,
-    val selectedCurrency: String = "$"
+    val selectedCurrency: String = "$",
+    val categoryError: String? = null
 )
 
 data class FilterState(
@@ -50,7 +51,8 @@ private data class CombinedData(
     val filters: FilterState,
     val budget: Budget,
     val monthTotal: BigDecimal,
-    val currency: String
+    val currency: String,
+    val categoryError: String?
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -62,16 +64,22 @@ class TransactionViewModel @Inject constructor(
     private val preferencesRepository: UserPreferencesRepository
 ) : ViewModel() {
     private val filterState = MutableStateFlow(FilterState())
+    private val categoryErrorState = MutableStateFlow<String?>(null)
 
     val uiState: StateFlow<TransactionState> = combine(
-        categoryRepository.getAllCategories(),
-        filterState,
-        budgetRepository.getBudget(),
-        transactionRepository.getCurrentMonthTotalAmount(),
-        preferencesRepository.getCurrencySymbol()
-    ) { categories, filters, budget, monthTotal, currency ->
-        CombinedData(categories, filters, budget, monthTotal, currency)
-    }.flatMapLatest { combined ->
+        combine(
+            categoryRepository.getAllCategories(),
+            filterState,
+            budgetRepository.getBudget(),
+            transactionRepository.getCurrentMonthTotalAmount(),
+            preferencesRepository.getCurrencySymbol()
+        ) { categories, filters, budget, monthTotal, currency ->
+            CombinedData(categories, filters, budget, monthTotal, currency, null)
+        },
+        categoryErrorState
+    ) { combined, categoryError ->
+        Pair(combined, categoryError)
+    }.flatMapLatest { (combined, categoryError) ->
         val filters = combined.filters
         val hasStartDate = filters.startDate != null
         val startDate = Instant.fromEpochMilliseconds(filters.startDate ?: 0L)
@@ -102,7 +110,8 @@ class TransactionViewModel @Inject constructor(
                 budgetAmount = combined.budget.amount,
                 currentFilter = filters,
                 totalAmountCurrentMonth = combined.monthTotal,
-                selectedCurrency = combined.currency
+                selectedCurrency = combined.currency,
+                categoryError = categoryError
             )
         }
     }.stateIn(
@@ -137,16 +146,35 @@ class TransactionViewModel @Inject constructor(
     // User Actions
     fun addCategory(name: String) {
         viewModelScope.launch {
-            if (name.isNotBlank()) {
-                categoryRepository.insertCategory(Category(id = 0, name = name.trim()))
+            val trimmedName = name.trim()
+            if (trimmedName.isBlank()) {
+                categoryErrorState.value = "Category name cannot be blank"
+                return@launch
             }
+            val existingCategories = uiState.value.categories
+            if (existingCategories.any { it.name.equals(trimmedName, ignoreCase = true) }) {
+                categoryErrorState.value = "Category already exists"
+                return@launch
+            }
+            categoryErrorState.value = null
+            categoryRepository.insertCategory(Category(id = 0, name = trimmedName))
         }
     }
 
     fun deleteCategory(id: Int) {
         viewModelScope.launch {
+            val transactions = transactionRepository.getTransactionsByCategory(id)
+            if (transactions.isNotEmpty()) {
+                categoryErrorState.value = "Cannot delete category with active transactions"
+                return@launch
+            }
+            categoryErrorState.value = null
             categoryRepository.deleteCategoryById(id)
         }
+    }
+
+    fun clearCategoryError() {
+        categoryErrorState.value = null
     }
 
     fun addTransaction(amount: BigDecimal, categoryId: Int, type: TransactionType) {
@@ -177,8 +205,8 @@ class TransactionViewModel @Inject constructor(
         }
     }
 
-    fun exportTransactionsToCsv(outputStream: OutputStream) {
-        viewModelScope.launch(Dispatchers.IO) {
+    fun exportTransactionsToCsv(outputStream: OutputStream): kotlinx.coroutines.Job {
+        return viewModelScope.launch(Dispatchers.IO) {
             val transactions = transactionRepository.getTransactionsWithCategory()
             outputStream.bufferedWriter().use { writer ->
                 writer.appendLine("Date,Category,Amount,Type")

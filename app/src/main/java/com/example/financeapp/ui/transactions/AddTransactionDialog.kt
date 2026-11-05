@@ -52,6 +52,8 @@ fun AddTransactionDialog(
     categories: List<Category> = emptyList()
 ) {
     var amountText by rememberSaveable { mutableStateOf("") }
+    var isAmountError by rememberSaveable { mutableStateOf(false) }
+    var amountErrorMessage by rememberSaveable { mutableStateOf("") }
     var selectedCategoryId by rememberSaveable { mutableIntStateOf(categories.firstOrNull()?.id ?: 0) }
 
     LaunchedEffect(categories) {
@@ -99,6 +101,9 @@ fun AddTransactionDialog(
                                             types[selectedTypeIndex]
                                         )
                                         onDismissRequest()
+                                    } else {
+                                        isAmountError = true
+                                        amountErrorMessage = "Please enter a valid amount greater than 0"
                                     }
                                 }
                             ) {
@@ -135,9 +140,18 @@ fun AddTransactionDialog(
 
                     OutlinedTextField(
                         value = amountText,
-                        onValueChange = { amountText = it },
+                        onValueChange = {
+                            amountText = it
+                            if (isAmountError) {
+                                isAmountError = false
+                            }
+                        },
                         label = { Text("Amount") },
                         singleLine = true,
+                        isError = isAmountError,
+                        supportingText = if (isAmountError) {
+                            { Text(amountErrorMessage) }
+                        } else null,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         modifier = Modifier.fillMaxWidth()
                     )

@@ -32,13 +32,20 @@ class FakeUserPreferencesRepository : UserPreferencesRepository {
 class FakeBackupRepository : BackupRepository {
     var exportCalled = false
     var importCalled = false
+    var shouldThrowError = false
 
     override suspend fun exportBackup(outputStream: OutputStream) {
+        if (shouldThrowError) {
+            throw java.io.IOException("Disk write error during export")
+        }
         exportCalled = true
         outputStream.write("{}".toByteArray())
     }
 
     override suspend fun importBackup(inputStream: InputStream) {
+        if (shouldThrowError) {
+            throw java.io.IOException("Malformed JSON during import")
+        }
         importCalled = true
     }
 }

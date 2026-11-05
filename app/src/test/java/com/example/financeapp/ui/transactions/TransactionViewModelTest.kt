@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.math.BigDecimal
@@ -124,5 +125,58 @@ class TransactionViewModelTest {
         assertNull(state.currentFilter.endDate)
         assertNull(state.currentFilter.categoryId)
         assertNull(state.currentFilter.type)
+    }
+
+    @Test
+    fun testAddCategory_duplicateName_setsCategoryError() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect()
+        }
+
+        viewModel.addCategory("food & dining")
+
+        val state = viewModel.uiState.value
+        assertEquals("Category already exists", state.categoryError)
+    }
+
+    @Test
+    fun testDeleteCategory_withActiveTransactions_setsCategoryError() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect()
+        }
+
+        viewModel.addTransaction(
+            amount = BigDecimal("50.00"),
+            categoryId = 1,
+            type = TransactionType.EXPENSE
+        )
+
+        viewModel.deleteCategory(1)
+
+        val state = viewModel.uiState.value
+        assertEquals("Cannot delete category with active transactions", state.categoryError)
+    }
+
+    @Test
+    fun testExportTransactionsToCsv_writesHeaderAndRows() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            viewModel.uiState.collect()
+        }
+
+        viewModel.addTransaction(
+            amount = BigDecimal("42.50"),
+            categoryId = 1,
+            type = TransactionType.EXPENSE
+        )
+
+        val outputStream = java.io.ByteArrayOutputStream()
+        viewModel.exportTransactionsToCsv(outputStream).join()
+
+        val csvContent = outputStream.toString(Charsets.UTF_8.name())
+        val lines = csvContent.trim().split("\r\n", "\n")
+
+        assertEquals("Date,Category,Amount,Type", lines[0])
+        assertEquals(2, lines.size)
+        assertTrue(lines[1].contains("Food & Dining,42.50,EXPENSE"))
     }
 }
